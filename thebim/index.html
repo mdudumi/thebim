@@ -101,31 +101,21 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
 
 /* Note Modal */
 .note-panel { max-width:600px; }
-.note-panel .toolbar { display:flex; gap:0.5rem; margin-bottom:0.5rem; }
-.note-panel .toolbar button { padding:0.5rem; border:none; background:var(--neutral); color:#fff; border-radius:4px; cursor:pointer; }
+.note-panel header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+.note-panel .toolbar { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem; }
+.note-panel .toolbar button { padding:0.4rem; border:none; background:var(--neutral); color:#fff; border-radius:4px; cursor:pointer; font-size:0.9rem; }
 .note-panel .toolbar button:hover { background:var(--primary); }
-.note-panel textarea { width:100%; height:200px; padding:0.5rem; border:1px solid #e2e8f0; border-radius:4px; resize:vertical; }
+.note-panel .toolbar .color-swatch { width:20px; height:20px; border:1px solid #ccc; cursor:pointer; border-radius:4px; }
+.note-panel .note-area { min-height:150px; border:1px solid #e2e8f0; border-radius:4px; padding:0.5rem; overflow-y:auto; }
 
 /* Mobile-responsive tweaks */
 @media (max-width: 600px) {
-  .controls {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    padding: 0.75rem;
-  }
-  .controls select#primary,
-  .controls #compare-container {
-    grid-column: 1 / -1;
-  }
-  .controls select#book { grid-column: 1 / 2; }
-  .controls select#chap { grid-column: 2 / 3; }
-  .controls select#verse { grid-column: 3 / 4; }
-  .controls button#prev,
-  .controls button#next {
-    grid-column: 1 / -1;
-    width: 100%;
-  }
+  .controls { display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem; padding:.75rem; }
+  .controls select#primary, .controls #compare-container { grid-column:1/-1; }
+  .controls select#book { grid-column:1/2; }
+  .controls select#chap { grid-column:2/3; }
+  .controls select#verse { grid-column:3/4; }
+  .controls button#prev, .controls button#next { grid-column:1/-1; width:100%; }
 }
   </style>
 </head>
@@ -195,13 +185,21 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
   <div id="note-modal">
     <div class="overlay"></div>
     <div class="note-panel">
-      <header><h2>Add Note</h2><button id="note-close">✖</button></header>
+      <header>
+        <h2>Add Note</h2>
+        <button id="note-close">✖</button>
+      </header>
       <div class="toolbar">
         <button data-cmd="bold"><strong>B</strong></button>
         <button data-cmd="italic"><em>I</em></button>
         <button data-cmd="underline"><u>U</u></button>
+        <div class="color-swatch" data-color="#e53935" style="background:#e53935;"></div>
+        <div class="color-swatch" data-color="#8e24aa" style="background:#8e24aa;"></div>
+        <div class="color-swatch" data-color="#3949ab" style="background:#3949ab;"></div>
+        <div class="color-swatch" data-color="#43a047" style="background:#43a047;"></div>
+        <div class="color-swatch" data-color="#ffb300" style="background:#ffb300;"></div>
       </div>
-      <textarea id="note-content" placeholder="Write your note here..."></textarea>
+      <div id="note-area" class="note-area" contenteditable="true"></div>
       <button id="save-note" style="margin-top:0.5rem; padding:0.5rem 1rem; background:var(--primary); color:#fff; border:none; border-radius:4px; cursor:pointer;">
         Save Note
       </button>
@@ -210,6 +208,7 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      // Element refs
       const primary       = document.getElementById('primary'),
             compareC      = document.getElementById('compare-container'),
             bookSel       = document.getElementById('book'),
@@ -234,18 +233,21 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
             addEntry      = document.getElementById('add-compare-entry'),
             filterTrans   = document.getElementById('filter-translation'),
             filterBook    = document.getElementById('filter-book'),
-            filterChap    = document.getElementById('filter-chapter');
+            filterChap    = document.getElementById('filter-chapter'),
+            noteModal     = document.getElementById('note-modal'),
+            noteClose     = document.getElementById('note-close'),
+            saveNoteBtn   = document.getElementById('save-note'),
+            noteArea      = document.getElementById('note-area');
 
       const apiUrl = 'https://api.github.com/repos/mdudumi/thebim/contents/thebim/Translations';
-
       let transData = {}, lists = {}, state = { idx:0, bkIdx:0, chIdx:0 }, compareEntries = [];
+      let currentRef = '';
 
       function fillSelect(sel, items) {
         sel.innerHTML = '';
         items.forEach(i => sel.append(new Option(i.label, i.value)));
         sel.disabled = !items.length;
       }
-
       function nest(json) {
         const o = {};
         (json.verses||[]).forEach(v => {
@@ -259,113 +261,91 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
       // Fetch translations
       const files = await fetch(apiUrl).then(r=>r.json()).catch(()=>[]);
       for (let f of files) {
-        if (!f.name.endsWith('.json')||f.name==='index.json') continue;
+        if (!f.name.endsWith('.json')|| f.name==='index.json') continue;
         const name = f.name.replace(/\.json$/,'');
         try {
           const data = await fetch(f.download_url).then(r=>r.json());
           transData[name] = nest(data);
           const books = Object.keys(transData[name]), chs = {};
-          books.forEach(b=>chs[b]=Object.keys(transData[name][b]));
-          lists[name] = { books, chapters:chs };
+          books.forEach(b=>chs[b] = Object.keys(transData[name][b]));
+          lists[name] = { books, chapters: chs };
         } catch {}
       }
 
-      // Populate translation dropdown & compare checkboxes
+      // Populate primary & compare
       const names = Object.keys(transData);
       fillSelect(primary, names.map(n=>({ label:n, value:n })));
-      names.forEach(n => {
+      names.forEach(n=>{
         const lbl = document.createElement('label');
         lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
         compareC.append(lbl);
       });
 
-      // Populate search modal filters
-      fillSelect(filterTrans, [{ label: 'All Bibles', value: '' }].concat(names.map(n=>({ label:n, value:n }))));
-      filterTrans.onchange = () => {
+      // Populate search filters
+      fillSelect(filterTrans, [{ label:'All Bibles', value:'' }].concat(names.map(n=>({label:n,value:n}))));
+      filterTrans.onchange = ()=>{
         const t = filterTrans.value;
-        if (t) {
-          fillSelect(filterBook, [{ label: 'All Books', value: '' }].concat(
-            lists[t].books.map(b=>({ label:b, value:b }))
-          ));
-        } else {
-          filterBook.innerHTML = '<option value="">All Books</option>';
-          filterBook.disabled = false;
-        }
-        filterChap.innerHTML = '<option value="">All Chapters</option>';
-        filterChap.disabled = false;
+        if (t) fillSelect(filterBook, [{label:'All Books',value:''}].concat(lists[t].books.map(b=>({label:b,value:b}))));
+        else { filterBook.innerHTML='<option value="">All Books</option>'; filterBook.disabled=false; }
+        filterChap.innerHTML='<option value="">All Chapters</option>'; filterChap.disabled=false;
       };
-      filterBook.onchange = () => {
-        const t = filterTrans.value, b = filterBook.value;
-        if (t && b) {
-          fillSelect(filterChap, [{ label: 'All Chapters', value: '' }].concat(
-            lists[t].chapters[b].map(c=>({ label:c, value:c }))
-          ));
-        } else {
-          filterChap.innerHTML = '<option value="">All Chapters</option>';
-        }
+      filterBook.onchange=()=>{
+        const t=filterTrans.value,b=filterBook.value;
+        if(t&&b) fillSelect(filterChap, [{label:'All Chapters',value:''}].concat(lists[t].chapters[b].map(c=>({label:c,value:c}))));
+        else filterChap.innerHTML='<option value="">All Chapters</option>';
       };
 
-      // Handlers
-      primary.onchange = () => {
-        state = { idx:0, bkIdx:0, chIdx:0 };
-        fillSelect(bookSel, lists[primary.value].books.map((b,i) => ({ label:b, value:i })));
+      // Handlers for primary/book/chap/verse
+      primary.onchange = ()=>{
+        state={idx:0,bkIdx:0,chIdx:0};
+        fillSelect(bookSel, lists[primary.value].books.map((b,i)=>({label:b,value:i})));
         fillSelect(chapSel, []);
         fillSelect(verseSel, []);
       };
-      bookSel.onchange = () => {
-        state.bkIdx = +bookSel.value;
-        const bk = lists[primary.value].books[state.bkIdx];
-        fillSelect(chapSel, lists[primary.value].chapters[bk].map((c,i) => ({ label:c, value:i })));
+      bookSel.onchange = ()=>{
+        state.bkIdx=+bookSel.value;
+        const bk=lists[primary.value].books[state.bkIdx];
+        fillSelect(chapSel, lists[primary.value].chapters[bk].map((c,i)=>({label:c,value:i})));
         fillSelect(verseSel, []);
       };
-      chapSel.onchange = () => {
-        state.chIdx = +chapSel.value;
-        state.idx = 0;
-        const bk = lists[primary.value].books[state.bkIdx];
-        const ch = lists[primary.value].chapters[bk][state.chIdx];
-        const vs = transData[primary.value][bk][ch] || [];
-        fillSelect(verseSel, vs.map((_,i)=>({ label:i+1, value:i })));
-        verseSlider.max = vs.length - 1;
-        verseSlider.value = 0;
+      chapSel.onchange = ()=>{
+        state.chIdx=+chapSel.value; state.idx=0;
+        const bk=lists[primary.value].books[state.bkIdx],
+              ch=lists[primary.value].chapters[bk][state.chIdx],
+              vs=transData[primary.value][bk][ch]||[];
+        fillSelect(verseSel, vs.map((_,i)=>({label:i+1,value:i})));
+        verseSlider.max=vs.length-1; verseSlider.value=0;
       };
-      verseSel.onchange = () => {
-        state.idx = +verseSel.value;
-        renderAll();
-      };
+      verseSel.onchange = ()=>{ state.idx=+verseSel.value; renderAll(); };
       prevBtn.onclick = ()=>navigate(-1);
       nextBtn.onclick = ()=>navigate(1);
       verseSlider.oninput = ()=>{ state.idx=+verseSlider.value; verseSel.value=state.idx; renderAll(); };
       compareC.addEventListener('change', ()=>{ if(!verseSel.disabled) renderAll(); });
 
       function navigate(delta) {
-        const max = +verseSlider.max;
-        state.idx = Math.max(0, Math.min(max, state.idx + delta));
-        verseSel.value = state.idx;
-        verseSlider.value = state.idx;
-        renderAll();
+        const max=+verseSlider.max;
+        state.idx=Math.max(0,Math.min(max,state.idx+delta));
+        verseSel.value=state.idx; verseSlider.value=state.idx; renderAll();
       }
 
-      // Render verses with actions
+      // Render verses with Copy/Share/Note
       function renderAll() {
-        output.innerHTML = '';
-        const { idx, bkIdx, chIdx } = state;
-        const main = primary.value;
-        const bk = lists[main].books[bkIdx];
-        const ch = lists[main].chapters[bk][chIdx];
-        verseImg.src = `images/${bkIdx+1}/${chIdx+1}/${idx+1}.jpg`;
-
+        output.innerHTML='';
+        const {idx,bkIdx,chIdx} = state,
+              main=primary.value,
+              bk=lists[main].books[bkIdx],
+              ch=lists[main].chapters[bk][chIdx];
+        verseImg.src=`images/${bkIdx+1}/${chIdx+1}/${idx+1}.jpg`;
         const checked = Array.from(compareC.querySelectorAll('input:checked'))
-                             .map(i => i.value)
-                             .filter(n => n !== main);
-        const toShow = [ main, ...checked ];
-
-        toShow.forEach(name => {
-          const b2 = lists[name].books[bkIdx];
-          const c2 = lists[name].chapters[b2][chIdx];
-          const txt = (transData[name][b2]||{})[c2]?.[idx] || '';
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
+                             .map(i=>i.value).filter(n=>n!==main);
+        const toShow=[main,...checked];
+        toShow.forEach(name=>{
+          const b2=lists[name].books[bkIdx],
+                c2=lists[name].chapters[b2][chIdx],
+                txt=(transData[name][b2]||{})[c2]?.[idx]||'';
+          const card=document.createElement('div');
+          card.className='card';
+          card.innerHTML=`
             <h2>${name}</h2>
             <p>${txt}</p>
             <div class="prog">${idx+1}/${(transData[name][b2]||{})[c2]?.length||0}</div>
@@ -373,78 +353,64 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
               <button class="copy-btn" title="Copy">📋</button>
               <button class="share-btn" title="Share">🔗</button>
               <button class="note-btn" title="Note">📝</button>
-            </div>
-          `;
-          // Copy handler
-          card.querySelector('.copy-btn').onclick = () => {
-            navigator.clipboard.writeText(txt);
+            </div>`;
+          card.querySelector('.copy-btn').onclick=()=>navigator.clipboard.writeText(txt);
+          card.querySelector('.share-btn').onclick=()=>{ 
+            const ref=`${name} ${bk} ${ch}:${idx+1}`,
+                  urlText=encodeURIComponent(`${ref}\n\n"${txt}"`);
+            window.open(`https://wa.me/?text=${urlText}`,'_blank');
           };
-          // Share via WhatsApp
-          card.querySelector('.share-btn').onclick = () => {
-            const ref = `${name} ${bk} ${ch}:${idx+1}`;
-            const urlText = encodeURIComponent(`${ref}\n\n"${txt}"`);
-            window.open(`https://wa.me/?text=${urlText}`, '_blank');
-          };
-          // Note handler
-          card.querySelector('.note-btn').onclick = () => {
-            openNoteModal(name, bk, ch, idx+1, txt);
-          };
+          card.querySelector('.note-btn').onclick=()=>openNoteModal(name,bk,ch,idx+1,txt);
           output.append(card);
         });
       }
 
-      // Search modal logic
+      // Search modal
       searchBtn.onclick = ()=>{ searchModal.classList.add('active'); globalInput.value=''; startBtn.disabled=true; resultsList.innerHTML=''; statsDiv.textContent=''; };
       searchClose.onclick = ()=>searchModal.classList.remove('active');
       globalInput.oninput = ()=>startBtn.disabled=!globalInput.value.trim();
-      startBtn.onclick = () => {
-        const term = globalInput.value.trim().toLowerCase();
-        let matches = [];
-        names.forEach(n => {
-          lists[n].books.forEach((b,i) => {
-            lists[n].chapters[b].forEach((c,j) => {
-              (transData[n][b][c]||[]).forEach((t,k) => {
-                if (t.toLowerCase().includes(term)) matches.push({n,b,j,k,t});
+      startBtn.onclick = ()=>{
+        const term=globalInput.value.trim().toLowerCase(), matches=[];
+        names.forEach(n=>{
+          lists[n].books.forEach((b,i)=>{
+            lists[n].chapters[b].forEach((c,j)=>{
+              (transData[n][b][c]||[]).forEach((t,k)=>{
+                if(t.toLowerCase().includes(term)) matches.push({n,b,j,k,t});
               });
             });
           });
         });
-        statsDiv.textContent = `Found ${matches.length}`;
-        resultsList.innerHTML = '';
-        matches.forEach(m => {
-          const li = document.createElement('li');
-          li.innerHTML = `<strong>[${m.n}] ${m.b} ${m.j+1}:${m.k+1}</strong> ${m.t.substring(0,50)}…`;
-          li.onclick = () => {
+        statsDiv.textContent=`Found ${matches.length}`;
+        resultsList.innerHTML='';
+        matches.forEach(m=>{
+          const li=document.createElement('li');
+          li.innerHTML=`<strong>[${m.n}] ${m.b} ${m.j+1}:${m.k+1}</strong> ${m.t.substring(0,50)}…`;
+          li.onclick=()=>{ 
             searchModal.classList.remove('active');
-            primary.value = m.n; primary.onchange();
-            bookSel.value = lists[m.n].books.indexOf(m.b); bookSel.onchange();
-            chapSel.value = m.j; chapSel.onchange();
-            verseSel.value = m.k; verseSel.onchange();
+            primary.value=m.n; primary.onchange();
+            bookSel.value=lists[m.n].books.indexOf(m.b); bookSel.onchange();
+            chapSel.value=m.j; chapSel.onchange();
+            verseSel.value=m.k; verseSel.onchange();
           };
           resultsList.append(li);
         });
       };
 
-      // Compare modal logic
+      // Compare modal
       compareIcon.onclick = ()=>compareModal.classList.add('active');
       compareClose.onclick = ()=>compareModal.classList.remove('active');
-      addEntry.onclick = ()=> {
-        if (compareEntries.length < 5) {
-          compareEntries.push({ trans: primary.value, bookIdx:0, chapIdx:0, verseIdx:0 });
-          renderCompare();
-        }
-      };
-      function renderCompare() {
-        compareList.innerHTML = '';
-        compareEntries.forEach((e,i) => {
-          const div = document.createElement('div');
-          div.className = 'compare-entry';
-          const selT=document.createElement('select'), selB=document.createElement('select');
-          const selC=document.createElement('select'), selV=document.createElement('select');
-          const rm=document.createElement('button'); rm.textContent='–';
-          rm.onclick=()=>{compareEntries.splice(i,1);renderCompare();};
-          fillSelect(selT,names.map(n=>({label:n,value:n})));
-          selT.value=e.trans; selT.onchange=()=>{e.trans=selT.value;updateBooks();};
+      addEntry.onclick = ()=>{ if(compareEntries.length<5){ compareEntries.push({trans:primary.value,bookIdx:0,chapIdx:0,verseIdx:0}); renderCompare(); } };
+      function renderCompare(){
+        compareList.innerHTML='';
+        compareEntries.forEach((e,i)=>{
+          const div=document.createElement('div'); div.className='compare-entry';
+          const selT=document.createElement('select'),
+                selB=document.createElement('select'),
+                selC=document.createElement('select'),
+                selV=document.createElement('select'),
+                rm=document.createElement('button'); rm.textContent='–';
+          rm.onclick=()=>{ compareEntries.splice(i,1); renderCompare(); };
+          fillSelect(selT,names.map(n=>({label:n,value:n}))); selT.value=e.trans; selT.onchange=()=>{ e.trans=selT.value; updateBooks(); };
           function updateBooks(){
             fillSelect(selB,lists[e.trans].books.map((b,idx)=>({label:b,value:idx})));
             selB.value=e.bookIdx; selB.onchange();
@@ -457,7 +423,8 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
           };
           selC.onchange=()=>{
             e.chapIdx=+selC.value;
-            const b=lists[e.trans].books[e.bookIdx], c=lists[e.trans].chapters[b][e.chapIdx];
+            const b=lists[e.trans].books[e.bookIdx],
+                  c=lists[e.trans].chapters[b][e.chapIdx];
             fillSelect(selV,(transData[e.trans][b][c]||[]).map((_,idx)=>({label:idx+1,value:idx})));
             selV.value=e.verseIdx; selV.onchange();
           };
@@ -469,47 +436,49 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
           compareList.append(div);
         });
         addEntry.disabled = compareEntries.length>=5;
-        updateCompareResult();
+        updateCompare
       }
       function updateCompareResult(){
-        const cmpRes = document.getElementById('compare-result');
+        const cmpRes=document.getElementById('compare-result');
         cmpRes.innerHTML='';
         compareEntries.forEach(e=>{
-          const b=lists[e.trans].books[e.bookIdx];
-          const c=lists[e.trans].chapters[b][e.chapIdx];
-          const t=transData[e.trans][b][c][e.verseIdx]||'';
-          const vb=document.createElement('div');
-          vb.className='verse-block';
+          const b=lists[e.trans].books[e.bookIdx],
+                c=lists[e.trans].chapters[b][e.chapIdx],
+                t=transData[e.trans][b][c][e.verseIdx]||'';
+          const vb=document.createElement('div'); vb.className='verse-block';
           vb.innerHTML=`<h3>${e.trans} ${b} ${e.chapIdx+1}:${e.verseIdx+1}</h3><p>${t}</p>`;
           cmpRes.append(vb);
         });
       }
 
-      // Note modal logic
-      const noteModal=document.getElementById('note-modal');
-      const noteClose=document.getElementById('note-close');
-      const saveNoteBtn=document.getElementById('save-note');
-      const noteContent=document.getElementById('note-content');
-      let currentRef='';
+      // Note modal
       function openNoteModal(trans,book,chap,verseNum,text){
         currentRef=`${trans} ${book} ${chap}:${verseNum}`;
-        noteContent.value=`Reference: ${currentRef}\n\n${text}\n\n`;
+        noteArea.innerHTML=`<strong>${currentRef}</strong><br><br>${text}`;
         noteModal.classList.add('active');
+        noteArea.focus();
       }
-      noteClose.onclick=()=>noteModal.classList.remove('active');
-      document.querySelectorAll('.note-panel .toolbar button').forEach(btn=>{
-        btn.onclick=()=>{
-          document.execCommand(btn.dataset.cmd,false);
-          noteContent.focus();
-        };
-      });
-      saveNoteBtn.onclick=()=>{
-        console.log('Saved note for', currentRef, noteContent.value);
-        // TODO: persist note
+      noteClose.onclick = ()=>noteModal.classList.remove('active');
+      saveNoteBtn.onclick = ()=>{
+        console.log('Saved note for', currentRef, noteArea.innerHTML);
+        // TODO: persist
         noteModal.classList.remove('active');
       };
+      // Toolbar formatting
+      document.querySelectorAll('.note-panel .toolbar button[data-cmd]').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.execCommand(btn.dataset.cmd,false);
+          noteArea.focus();
+        });
+      });
+      document.querySelectorAll('.note-panel .toolbar .color-swatch').forEach(swatch=>{
+        swatch.addEventListener('click',()=>{
+          document.execCommand('foreColor',false,swatch.dataset.color);
+          noteArea.focus();
+        });
+      });
 
-      // Auto-select first translation → book 1 → chapter 1 → verse 1
+      // Auto-select first items
       primary.disabled=false; primary.selectedIndex=0; primary.onchange();
       bookSel.value="0"; bookSel.onchange();
       chapSel.value="0"; chapSel.onchange();
