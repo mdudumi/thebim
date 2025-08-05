@@ -23,7 +23,7 @@
     body {
       display: flex; flex-direction: column;
       font-family: 'Roboto', sans-serif;
-      background: var(--bg); color: #1d4ed8;
+      background: var(--bg); color: var(--text);
       height: 100vh; overflow: hidden;
     }
     h1 {
@@ -191,17 +191,11 @@
         flex-direction: column;
       }
       aside#image-panel {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        overflow: visible;
-        height: auto;
+        width: 100%; border-right: none; border-bottom: 1px solid var(--border);
+        overflow: visible; height: auto;
       }
       #verse-image {
-        width: 100%;
-        height: auto;
-        object-fit: contain;
-        max-height: none;
+        width: 100%; height: auto; object-fit: contain; max-height: none;
       }
       .translations {
         width: 100%; border-right: none;
@@ -291,7 +285,7 @@
     function fillSelect(sel, items){
       sel.innerHTML = '';
       items.forEach(i => sel.append(new Option(i.label, i.value)));
-      sel.disabled = !items.length;
+      sel.disabled = items.length === 0;
     }
 
     function nest(json){
@@ -321,30 +315,30 @@
             lists[name] = { books, chapters };
           } catch{}
         }
-
-        fillSelect(primary, Object.keys(transData).map(n=>({label:n,value:n})));
-        compareContainer.innerHTML = '';
-        Object.keys(transData).forEach(n => {
-          const lbl = document.createElement('label');
-          lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
-          compareContainer.append(lbl);
-        });
-
-        fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
-        filtTrans.onchange();
-
-        fillSelect(bookSel, []);
-        fillSelect(chapSel, []);
-        fillSelect(verseSel, []);
-        prevBtn.disabled = nextBtn.disabled = true;
-        output.innerHTML = `<p style="color:var(--muted);padding:1rem;">Select “Load” to begin.</p>`;
-        verseImg.src = '';
-        verseSlider.disabled = true;
-
+        initializeUI();
         handleDeepLink();
       };
       inp.click();
     };
+
+    function initializeUI() {
+      fillSelect(primary, Object.keys(transData).map(n=>({label:n,value:n})));
+      compareContainer.innerHTML = '';
+      Object.keys(transData).forEach(n => {
+        const lbl = document.createElement('label');
+        lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
+        compareContainer.append(lbl);
+      });
+      fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
+      filtTrans.onchange();
+      fillSelect(bookSel, []);
+      fillSelect(chapSel, []);
+      fillSelect(verseSel, []);
+      prevBtn.disabled = nextBtn.disabled = true;
+      output.innerHTML = `<p style="color:var(--muted);padding:1rem;">Select a book.</p>`;
+      verseImg.src = '';
+      verseSlider.disabled = true;
+    }
 
     primary.onchange = () => {
       if (!lists[primary.value]) return;
@@ -459,23 +453,16 @@
     filtTrans.onchange = () => {
       const trans = filtTrans.value || primary.value;
       const books = lists[trans]?.books || [];
-      const bookOptions = [
-        { label: 'All Books', value: '' },
-        ...books.map((b,i)=>({label:b,value:i}))
-      ];
-      fillSelect(filtBook, bookOptions);
-      filtBook.onchange();
+      const options = [{label:'All Bibles',value:''}, ...books.map((b,i)=>({label:b,value:i}))];
+      fillSelect(filtBook, options);
     };
     filtBook.onchange = () => {
       const trans = filtTrans.value || primary.value;
       const bkIdx = filtBook.value;
       const bk = bkIdx === '' ? null : lists[trans].books[+bkIdx];
       const chs = bk ? lists[trans].chapters[bk] : [];
-      const chapterOptions = [
-        { label: 'All Chapters', value: '' },
-        ...chs.map((c,i)=>({label:c,value:i}))
-      ];
-      fillSelect(filtChapter, chapterOptions);
+      const opts = [{label:'All Chapters',value:''}, ...chs.map((c,i)=>({label:c,value:i}))];
+      fillSelect(filtChapter, opts);
     };
 
     globalInput.addEventListener('keydown', e => {
@@ -484,27 +471,16 @@
       if (!term) return;
       resultsList.innerHTML = '<li>Searching…</li>';
       statsDiv.textContent = '';
-
-      const tFilter = filtTrans.value;
-      const testFilter = filtTestament.value;
-      const bFilter = filtBook.value;
-      const cFilter = filtChapter.value;
       let matches = [];
 
       Object.entries(transData).forEach(([tName, books]) => {
-        if (tFilter && tName !== tFilter) return;
         lists[tName].books.forEach((bkName,bkIdx) => {
-          if (bFilter!=='' && bkIdx.toString()!==bFilter) return;
-          const isOT = bkIdx < 39;
-          if (testFilter==='ot' && !isOT) return;
-          if (testFilter==='nt' && isOT) return;
-          const chapters=books[bkName]||{};
+          const chapters = books[bkName]||{};
           Object.entries(chapters).forEach(([chName,verses],chIdx) => {
-            if (cFilter!==''&&chIdx.toString()!==cFilter) return;
             verses.forEach((txt,vIdx) => {
               if (txt.toLowerCase().includes(term)) {
-                const start=txt.toLowerCase().indexOf(term);
-                const snippet='…'+txt.substr(Math.max(0,start-20),term.length+40)+'…';
+                const start = txt.toLowerCase().indexOf(term);
+                const snippet = '…'+txt.substr(Math.max(0,start-20), term.length+40)+'…';
                 matches.push({tName,bkIdx,chIdx,vIdx,snippet});
               }
             });
@@ -590,21 +566,20 @@
       nextBtn.disabled = state.idx >= total - 1;
     }
 
-    // --- AUTO-LOAD translations from GitHub ---
+    // Auto-load translations from GitHub
     ;(async function autoLoadFromGitHub() {
       const files = [
         'Albanian.json',
-        'Deutsch.json'
-        'Dutch.json'
-        'English.json'
-        'Francais.json'
-        'Italian.json'
-        'Spanish.json'
+        'Deutsch.json',
+        'Dutch.json',
+        'English.json',
+        'Francais.json',
+        'Italian.json',
+        'Spanish.json',
         'Turkish.json'
-        // add your filenames here
       ];
       const baseURL = 'https://raw.githubusercontent.com/thebim/translations/main/';
-      let count = 0;
+      let loaded = 0;
 
       for (let file of files) {
         try {
@@ -618,38 +593,19 @@
           const chapters = {};
           books.forEach(b => chapters[b] = Object.keys(nested[b]));
           lists[name] = { books, chapters };
-          count++;
+          loaded++;
         } catch (err) {
-          console.error(`Failed to load ${file}:`, err);
+          console.warn(`Could not load ${file}:`, err);
         }
       }
 
-      if (count > 0) {
-        fillSelect(primary, Object.keys(transData).map(n=>({label:n,value:n})));
-        compareContainer.innerHTML = '';
-        Object.keys(transData).forEach(n => {
-          const lbl = document.createElement('label');
-          lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
-          compareContainer.append(lbl);
-        });
-        fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
-        filtTrans.onchange();
-        fillSelect(bookSel, []);
-        fillSelect(chapSel, []);
-        fillSelect(verseSel, []);
-        prevBtn.disabled = nextBtn.disabled = true;
-        output.innerHTML = `<p style="color:var(--muted);padding:1rem;">Select a book.</p>`;
-        verseImg.src = '';
-        verseSlider.disabled = true;
+      if (loaded) {
+        initializeUI();
         handleDeepLink();
       }
     })();
 
   })();
   </script>
-
 </body>
 </html>
-
-
-
