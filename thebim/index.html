@@ -499,11 +499,12 @@
     // 6) auto-select first translation
     primary.disabled=false;
     if(primary.options.length){
-      primary.selectedIndex=0;
-      primary.onchange();
+primary.selectedIndex = 0;
+primary.dispatchEvent(new Event('change'));
     }
     handleDeepLink();
   })();
   </script>
 </body>
 </html>
+
