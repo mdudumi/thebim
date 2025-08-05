@@ -83,27 +83,26 @@
       border-radius:var(--radius);
       background:#fafbfc;
     }
-main {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  grid-template-rows: 1fr;      /* ← added */
-  gap: 1rem;
-  overflow: hidden;
-  padding: 1rem;
-}
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 1rem;
+      overflow: hidden;
+      padding: 1rem;
+    }
     @media (max-width:900px) { main { display:flex; flex-direction:column; } }
-aside#image-panel {
-  background: var(--surface);
-  padding: 0;                   /* ← changed from 1rem */
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;                 /* ← added */
-  overflow: hidden;             /* ← added */
-}
+    aside#image-panel {
+      background: var(--surface);
+      padding: 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      overflow: hidden;
+    }
     #verse-image {
       width:100%; height:100%; object-fit: cover; border-radius:var(--radius);
     }
@@ -122,74 +121,35 @@ aside#image-panel {
       transform:translateY(-2px);
       box-shadow:var(--shadow-md);
     }
-    .card h2 {
-      font-size:1rem; font-weight:500;
-      color:var(--primary); margin-bottom:.5rem;
-    }
-    .card p {
-      font-size:.95rem; line-height:1.5;
-      margin-bottom:.75rem;
-    }
-    .card .prog {
-      font-size:.85rem; color:var(--neutral);
-      text-align:right;
-    }
+    .card h2 { font-size:1rem; font-weight:500; color:var(--primary); margin-bottom:.5rem; }
+    .card p { font-size:.95rem; line-height:1.5; margin-bottom:.75rem; }
+    .card .prog { font-size:.85rem; color:var(--neutral); text-align:right; }
     .icons {
       position:absolute; top:.75rem; right:.75rem;
       display:flex; gap:.5rem;
     }
-    .icons button {
-      background:none; border:none; cursor:pointer;
-      font-size:1.1rem; color:var(--neutral);
-      transition:color var(--transition);
-    }
+    .icons button { background:none; border:none; cursor:pointer; font-size:1.1rem; color:var(--neutral); transition:color var(--transition); }
     .icons button:hover { color:var(--accent); }
-
-    /* —— Search Modal —— */
     #search-modal { display:none; position:fixed; inset:0; z-index:20; }
     #search-modal.active { display:block; }
-    .search-overlay {
-      position:absolute; inset:0; background:rgba(0,0,0,0.4);
-    }
+    .search-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.4); }
     .search-panel {
-      position:absolute; top:10%; left:50%;
-      transform:translateX(-50%);
+      position:absolute; top:10%; left:50%; transform:translateX(-50%);
       width:90%; max-width:600px;
       background:var(--surface);
       border-radius:var(--radius);
       padding:1rem;
       box-shadow:var(--shadow-md);
     }
-    #search-close {
-      float:right; background:none; border:none;
-      font-size:1.2rem; cursor:pointer;
-    }
-    #search-input-global {
-      width:100%; padding:.5rem; font-size:1rem;
-      border:1px solid #e2e8f0; border-radius:4px;
-      margin-bottom:1rem;
-    }
-    .search-filters {
-      display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-      gap:.5rem; margin-bottom:.75rem;
-      background:var(--surface); padding:.5rem;
-      border-radius:var(--radius); box-shadow:var(--shadow-sm);
-    }
-    .search-filters select {
-      padding:.5rem; font-size:.95rem;
-      border:1px solid #e2e8f0; border-radius:var(--radius);
-      background:var(--surface);
-    }
-    .search-stats {
-      margin-bottom:.5rem; font-size:.95rem; color:var(--neutral);
-    }
-    #search-results {
-      list-style:none; max-height:50vh; overflow-y:auto; padding:0;
-    }
-    #search-results li {
-      padding:.5rem; border-bottom:1px solid #e2e8f0;
-      cursor:pointer; transition:background var(--transition);
-    }
+    #search-close { float:right; background:none; border:none; font-size:1.2rem; cursor:pointer; }
+    #search-input-global { width:100%; padding:.5rem; font-size:1rem; border:1px solid #e2e8f0; border-radius:4px; margin-bottom:.5rem; }
+    #start-search { width:100%; padding:.5rem; font-size:1rem; margin-bottom:1rem; border-radius:4px; border:none; background:var(--primary); color:#fff; cursor:pointer; }
+    #start-search:disabled { background:#e2e8f0; cursor:not-allowed; color:var(--neutral); }
+    .search-filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:.5rem; margin-bottom:.75rem; background:var(--surface); padding:.5rem; border-radius:var(--radius); box-shadow:var(--shadow-sm); }
+    .search-filters select { padding:.5rem; font-size:.95rem; border:1px solid #e2e8f0; border-radius:var(--radius); background:var(--surface); }
+    .search-stats { margin-bottom:.5rem; font-size:.95rem; color:var(--neutral); }
+    #search-results { list-style:none; max-height:50vh; overflow-y:auto; padding:0; }
+    #search-results li { padding:.5rem; border-bottom:1px solid #e2e8f0; cursor:pointer; transition:background var(--transition); }
     #search-results li:hover { background:var(--bg); }
   </style>
 </head>
@@ -217,7 +177,7 @@ aside#image-panel {
       <img id="verse-image" src="" alt="Verse Image">
     </aside>
     <div class="translations" id="output">
-      <p style="color:var(--neutral)">Select a translation, book &amp; chapter to begin...</p>
+      <p style="color:var(--neutral)">Select a translation, book & chapter to begin...</p>
     </div>
   </main>
 
@@ -227,6 +187,8 @@ aside#image-panel {
     <div class="search-panel">
       <button id="search-close">✖</button>
       <input id="search-input-global" placeholder="Search all verses…">
+      <button id="start-search" disabled>Start Search</button>
+
       <div class="search-filters">
         <select id="filter-translation"><option value="">All Bibles</option></select>
         <select id="filter-testament">
@@ -267,6 +229,7 @@ aside#image-panel {
             searchModal     = document.getElementById('search-modal'),
             searchClose     = document.getElementById('search-close'),
             globalInput     = document.getElementById('search-input-global'),
+            startBtn        = document.getElementById('start-search'),
             resultsList     = document.getElementById('search-results'),
             statsDiv        = document.getElementById('search-stats'),
             filtTrans       = document.getElementById('filter-translation'),
@@ -292,7 +255,7 @@ aside#image-panel {
       // Fetch translation files
       const files = await fetch(apiUrl).then(r=>r.json()).catch(()=>[]);
       for (let f of files) {
-        if (!f.name.endsWith('.json')) continue;
+        if (!f.name.endsWith('.json') || f.name.toLowerCase()==='index.json') continue;
         const name = f.name.replace(/\.json$/i, '');
         try {
           const data = await fetch(f.download_url).then(r=>r.json());
@@ -313,7 +276,7 @@ aside#image-panel {
       });
       fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
 
-      // Event handlers (same as your original, unchanged)…
+      // Event handlers...
       primary.onchange = () => {
         state = { idx:0, bkIdx:0, chIdx:0 };
         const books = lists[primary.value].books;
@@ -363,24 +326,9 @@ aside#image-panel {
         verseSel.value = state.idx;
         renderAll(); updateURL();
       };
-      compareC.addEventListener('change', () => {
-        if (!verseSel.disabled) renderAll();
-      });
+      compareC.addEventListener('change', () => { if (!verseSel.disabled) renderAll(); });
 
-      // Global search modal
-      filtTrans.onchange = () => {
-        const t = filtTrans.value||primary.value;
-        const bs = lists[t]?.books||[];
-        fillSelect(filtBook, [{label:'All Books',value:''},...bs.map((b,i)=>({label:b,value:i}))]);
-        filtBook.onchange();
-      };
-      filtBook.onchange = () => {
-        const t = filtTrans.value||primary.value;
-        const bi = filtBook.value;
-        const bk = bi===''?null:lists[t].books[+bi];
-        const cs = bk?lists[t].chapters[bk]:[];
-        fillSelect(filtChapter, [{label:'All Chapters',value:''},...cs.map((c,i)=>({label:c,value:i}))]);
-      };
+      // Global search modal behavior
       globalSearchBtn.onclick = () => {
         searchModal.classList.add('active');
         globalInput.value = '';
@@ -389,9 +337,13 @@ aside#image-panel {
         filtTrans.focus();
       };
       searchClose.onclick = () => searchModal.classList.remove('active');
-      globalInput.addEventListener('keydown', e => {
-        if (e.key!=='Enter') return;
-        const term = e.target.value.trim().toLowerCase();
+
+      startBtn.addEventListener('click', () => performSearch());
+      globalInput.addEventListener('input', () => startBtn.disabled = !globalInput.value.trim());
+      globalInput.addEventListener('keydown', e => { if (e.key==='Enter') performSearch(); });
+
+      function performSearch() {
+        const term = globalInput.value.trim().toLowerCase();
         if (!term) return;
         resultsList.innerHTML = '<li>Searching…</li>';
         statsDiv.textContent = '';
@@ -399,15 +351,15 @@ aside#image-panel {
         let matches = [];
         Object.entries(transData).forEach(([tn, bs]) => {
           if (tf && tn!==tf) return;
-          lists[tn].books.forEach((bni,bii) => {
-            if (bf!=='' && bii.toString()!==bf) return;
+          lists[tn].books.forEach((bni, bii) => {
+            if (bf!=='' && +bf!==bii) return;
             const isOT = bii<39;
             if (tfm==='ot'&&!isOT) return;
             if (tfm==='nt'&&isOT) return;
             const chs = bs[bni]||{};
-            Object.entries(chs).forEach(([chn,vs],chi) => {
-              if (cf!==''&&chi.toString()!==cf) return;
-              vs.forEach((txt,vi) => {
+            Object.entries(chs).forEach(([chn, vs], chi) => {
+              if (cf!=='' && +cf!==chi) return;
+              vs.forEach((txt, vi) => {
                 if (txt.toLowerCase().includes(term)) {
                   const s = txt.toLowerCase().indexOf(term);
                   const sn = '…'+txt.substr(Math.max(0,s-20),term.length+40)+'…';
@@ -433,9 +385,9 @@ aside#image-panel {
           };
           resultsList.append(li);
         });
-      });
+      }
 
-      // URL sync & rendering
+      // URL sync & rendering logic
       function updateURL(){
         const p = new URLSearchParams();
         p.set('primary', primary.value);
@@ -454,34 +406,25 @@ aside#image-panel {
         const vs = transData[main][bk][ch]||[];
         const total = vs.length;
         verseImg.src = `images/${bkIdx+1}/${chIdx+1}/${idx+1}.jpg`;
-        const checked = Array.from(compareC.querySelectorAll('input:checked'))
-          .map(i=>i.value).filter(n=>n!==main);
+        const checked = Array.from(compareC.querySelectorAll('input:checked')).map(i=>i.value).filter(n=>n!==main);
         const names = [main, ...checked];
         names.forEach(name => {
           const b2 = lists[name].books[bkIdx];
           const c2s = lists[name].chapters[b2]||[];
           const txt = transData[name][b2]?.[c2s[chIdx]]?.[idx]||'';
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `<h2>${name}</h2>
-                            <p>${txt}</p>
-                            <div class="prog">${idx+1} / ${total}</div>`;
-          const icons = document.createElement('div');
-          icons.className = 'icons';
+          const card = document.createElement('div'); card.className = 'card';
+          card.innerHTML = `<h2>${name}</h2><p>${txt}</p><div class="prog">${idx+1} / ${total}</div>`;
+          const icons = document.createElement('div'); icons.className = 'icons';
           ['📝','📋','🔗'].forEach(sym => {
-            const btn = document.createElement('button');
-            btn.innerText = sym;
+            const btn = document.createElement('button'); btn.innerText = sym;
             btn.onclick = () => {
               if (sym==='📝') {
                 const vid = `${name}|${bkIdx}|${chIdx}|${idx}`;
                 const notes = JSON.parse(localStorage.getItem('notes')||'{}');
                 const n = prompt('Note:', notes[vid]||'');
-                notes[vid] = n;
-                localStorage.setItem('notes', JSON.stringify(notes));
+                notes[vid] = n; localStorage.setItem('notes', JSON.stringify(notes));
               }
-              if (sym==='📋') {
-                navigator.clipboard.writeText(txt).then(()=>alert('Copied!'));
-              }
+              if (sym==='📋') navigator.clipboard.writeText(txt).then(()=>alert('Copied!'));
               if (sym==='🔗') {
                 const url = `${location.origin}${location.pathname}?primary=${name}&book=${bkIdx}&chap=${chIdx}&verse=${idx}`;
                 if (navigator.share) navigator.share({title:`${bk} ${chIdx+1}:${idx+1}`,url});
