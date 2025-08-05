@@ -37,6 +37,9 @@
       background: var(--panel-bg); align-items: center;
       box-shadow: var(--shadow); z-index: 5;
     }
+    /* hide the Load button */
+    #load { display: none; }
+
     .controls>* {
       background: var(--panel-bg);
       border: 1px solid var(--border);
@@ -194,7 +197,9 @@
       <div class="search-filters">
         <select id="filter-translation"><option value="">All Bibles</option></select>
         <select id="filter-testament">
-          <option value="">Both</option><option value="ot">Old Testament</option><option value="nt">New Testament</option>
+          <option value="">Both</option>
+          <option value="ot">Old Testament</option>
+          <option value="nt">New Testament</option>
         </select>
         <select id="filter-book"><option value="">All Books</option></select>
         <select id="filter-chapter"><option value="">All Chapters</option></select>
@@ -207,17 +212,16 @@
   <div class="content-wrapper">
     <aside id="image-panel"><img id="verse-image" src="" alt="Verse"></aside>
     <div class="translations" id="output">
-      <p style="color:var(--muted);padding:1rem;">Select “Load” to begin.</p>
+      <p style="color:var(--muted);padding:1rem;">Loading translations…</p>
     </div>
   </div>
 
   <input type="range" id="verse-slider" disabled>
 
   <script>
-  (function(){
+  document.addEventListener('DOMContentLoaded', () => {
     // DOM refs
-    const loadBtn         = document.getElementById('load'),
-          primary         = document.getElementById('primary'),
+    const primary         = document.getElementById('primary'),
           compareContainer= document.getElementById('compare-container'),
           bookSel         = document.getElementById('book'),
           chapSel         = document.getElementById('chap'),
@@ -264,7 +268,7 @@
         compareContainer.append(lbl);
       });
       fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
-      filtTrans.onchange();
+      filtTrans.onchange && filtTrans.onchange();
       fillSelect(bookSel, []);
       fillSelect(chapSel, []);
       fillSelect(verseSel, []);
@@ -274,10 +278,10 @@
       verseSlider.disabled = true;
     }
 
-    // (… your existing handlers for Load button, select changes, navigation, search, renderAll, etc. …)
+    // … Insert your existing onchange/navigation/search/renderAll handlers here …
 
-    // **AUTO-LOAD** translations from your GitHub raw directory
-    ;(async function autoLoad(){
+    // Auto-load translations from GitHub
+    (async function autoLoad(){
       const files = [
         'Albanian.json',
         'Deutsch.json',
@@ -288,40 +292,34 @@
         'Spanish.json',
         'Turkish.json'
       ];
-      // ← your real raw path here:
       const baseURL = 'https://raw.githubusercontent.com/mdudumi/thebim/main/thebim/Translations/';
       let got = 0;
 
       for (let file of files){
         try {
-          const r = await fetch(baseURL + file);
-          if (!r.ok) throw new Error(r.statusText);
-          const json = await r.json();
-          const name = file.replace(/\.json$/i,'');
-          const nested = nest(json);
-          transData[name] = nested;
-          const books = Object.keys(nested);
-          const chapters = {};
-          books.forEach(b=>chapters[b]=Object.keys(nested[b]));
-          lists[name] = {books,chapters};
+          const res = await fetch(baseURL + file);
+          if (!res.ok) throw new Error(res.statusText);
+          const json = await res.json();
+          transData[file.replace(/\.json$/i,'')] = nest(json);
           got++;
         } catch(err){
           console.warn(`Failed to load ${file}:`, err);
         }
       }
+
       if (got){
         initializeUI();
-        // deep‐link into URL if present
+        // Handle deep links if any
         const p = new URLSearchParams(location.search);
-        if (p.has('primary')) primary.value = p.get('primary');
-        primary.onchange && primary.onchange();
-        if (p.has('book'))     bookSel.value = p.get('book'), bookSel.onchange();
-        if (p.has('chap'))     chapSel.value = p.get('chap'), chapSel.onchange();
-        if (p.has('verse'))    verseSel.value = p.get('verse'), verseSel.onchange();
+        if (p.has('primary')) { primary.value = p.get('primary'); primary.onchange(); }
+        if (p.has('book'))    { bookSel.value = p.get('book');     bookSel.onchange(); }
+        if (p.has('chap'))    { chapSel.value = p.get('chap');     chapSel.onchange(); }
+        if (p.has('verse'))   { verseSel.value = p.get('verse');   verseSel.onchange(); }
+      } else {
+        output.innerHTML = `<p style="color:var(--muted);padding:1rem;">Failed to load translations.</p>`;
       }
     })();
-
-  })();
+  });
   </script>
 </body>
 </html>
