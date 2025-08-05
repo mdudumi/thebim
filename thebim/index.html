@@ -349,7 +349,7 @@
     fillSelect(primary, Object.keys(transData).map(n=>({label:n,value:n})));
     Object.keys(transData).forEach(n=>{
       const lbl=document.createElement('label');
-      lbl.innerHTML=<input type="checkbox" value="${n}"> ${n};
+      lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
       compareC.append(lbl);
     });
     fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
@@ -456,7 +456,7 @@
         const bn=lists[m.tn].books[m.bii];
         const cn=lists[m.tn].chapters[bn][m.chi];
         const li=document.createElement('li');
-        li.innerHTML=<strong>[${m.tn}] ${bn} ${cn}:${m.vi+1}</strong><p><em>${m.sn}</em></p>;
+        li.innerHTML = `<strong>[${m.tn}] ${bn} ${cn}:${m.vi+1}</strong><p><em>${m.sn}</em></p>`;
         li.onclick=()=>{
           primary.value=m.tn; primary.onchange();
           bookSel.value=m.bii; bookSel.onchange();
@@ -494,7 +494,7 @@
         const txt=transData[name][b2]?.[c2s[chIdx]]?.[idx]||'';
         const card=document.createElement('div');
         card.className='card';
-        card.innerHTML=<h2>${name}</h2><p>${txt}</p><div class="prog">${idx+1} / ${total}</div>;
+        card.innerHTML = `<h2>${name}</h2><p>${txt}</p><div class="prog">${idx+1} / ${total}</div>`;
         const icons=document.createElement('div'); icons.className='icons';
         const noteBtn=document.createElement('button');
         noteBtn.innerText='📝'; noteBtn.title='Note';
@@ -554,3 +554,4 @@ primary.dispatchEvent(new Event('change'));
   </script>
 </body>
 </html>
+
