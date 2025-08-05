@@ -37,9 +37,8 @@
       background: var(--panel-bg); align-items: center;
       box-shadow: var(--shadow); z-index: 5;
     }
-    /* hide the Load button */
+    /* hide manual Load button */
     #load { display: none; }
-
     .controls>* {
       background: var(--panel-bg);
       border: 1px solid var(--border);
@@ -99,7 +98,10 @@
       background: var(--panel-bg); border-radius: var(--radius);
       padding: 1rem; box-shadow: var(--shadow);
     }
-    #search-close { float: right; background: none; border: none; font-size: 1.2rem; cursor: pointer; }
+    #search-close {
+      float: right; background: none; border: none; font-size: 1.2rem;
+      cursor: pointer;
+    }
     #search-input-global {
       width: 100%; padding: .5rem; font-size: 1rem;
       border: 1px solid var(--border); border-radius: 4px;
@@ -117,22 +119,31 @@
       border: 1px solid var(--border); border-radius: var(--radius);
       background: var(--panel-bg);
     }
-    .search-stats { margin-bottom: .5rem; font-size: .95rem; color: var(--muted); }
-    #search-results { list-style: none; max-height: 50vh; overflow-y: auto; padding: 0; }
+    .search-stats {
+      margin-bottom: .5rem;
+      font-size: .95rem; color: var(--muted);
+    }
+    #search-results {
+      list-style: none; max-height: 50vh; overflow-y: auto; padding: 0;
+    }
     #search-results li {
       padding: .5rem; border-bottom: 1px solid var(--border);
       cursor: pointer; transition: background .2s;
     }
     #search-results li:hover { background: var(--bg); }
 
-    .content-wrapper { flex: 1; display: flex; overflow: hidden; }
+    .content-wrapper {
+      flex: 1; display: flex; overflow: hidden;
+    }
     aside#image-panel {
       flex: 0 0 40%; background: var(--panel-bg);
       border-right: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
       padding: 1rem; overflow: hidden;
     }
-    #verse-image { width: 100%; height: auto; object-fit: contain; }
+    #verse-image {
+      width: 100%; height: auto; object-fit: contain;
+    }
     .translations {
       flex: 1; overflow-y: auto; padding: 1rem; background: #f9fafb;
     }
@@ -143,12 +154,17 @@
       margin-bottom: 1rem; padding: 1rem;
       display: flex; flex-direction: column; position: relative;
     }
-    .card h2 { font-size: 1.1rem; color: var(--primary); margin-bottom: .5rem; font-weight: 500; }
+    .card h2 {
+      font-size: 1.1rem; color: var(--primary);
+      margin-bottom: .5rem; font-weight: 500;
+    }
     .card p {
       flex: 1; overflow-y: auto; line-height: 1.5;
       font-size: .95rem; margin-bottom: .5rem;
     }
-    .card .prog { text-align: right; font-size: .85rem; color: var(--muted); }
+    .card .prog {
+      text-align: right; font-size: .85rem; color: var(--muted);
+    }
     .icons {
       position: absolute; top: 8px; right: 8px; display: flex; gap: 8px;
     }
@@ -157,19 +173,41 @@
       font-size: 1.2rem; color: var(--muted);
     }
     .icons button:hover { color: var(--accent); }
-    #verse-slider { width: calc(100% - 2rem); margin: 0 1rem 1rem; display: block; }
+
+    #verse-slider {
+      width: calc(100% - 2rem); margin: 0 1rem 1rem; display: block;
+    }
 
     @media (max-width: 800px) {
-      .controls { grid-template-columns: auto 1fr 1fr 1fr; grid-auto-rows: auto; }
-      .controls > * { font-size: .9rem; }
-      .search-filters { grid-template-columns: 1fr; }
-      .content-wrapper { flex-direction: column; }
-      aside#image-panel {
-        width: 100%; border-right: none; border-bottom: 1px solid var(--border);
-        overflow: visible; height: auto;
+      .controls {
+        grid-template-columns: auto 1fr 1fr 1fr;
+        grid-auto-rows: auto;
       }
-      #verse-image { width: 100%; height: auto; object-fit: contain; max-height: none; }
-      .translations { width: 100%; border-right: none; }
+      .controls > * {
+        font-size: .9rem;
+      }
+      .search-filters {
+        grid-template-columns: 1fr;
+      }
+      .content-wrapper {
+        flex-direction: column;
+      }
+      aside#image-panel {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        overflow: visible;
+        height: auto;
+      }
+      #verse-image {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        max-height: none;
+      }
+      .translations {
+        width: 100%; border-right: none;
+      }
     }
   </style>
 </head>
@@ -195,14 +233,20 @@
       <button id="search-close">✖</button>
       <input id="search-input-global" placeholder="Search all verses…">
       <div class="search-filters">
-        <select id="filter-translation"><option value="">All Bibles</option></select>
+        <select id="filter-translation">
+          <option value="">All Bibles</option>
+        </select>
         <select id="filter-testament">
           <option value="">Both</option>
           <option value="ot">Old Testament</option>
           <option value="nt">New Testament</option>
         </select>
-        <select id="filter-book"><option value="">All Books</option></select>
-        <select id="filter-chapter"><option value="">All Chapters</option></select>
+        <select id="filter-book">
+          <option value="">All Books</option>
+        </select>
+        <select id="filter-chapter">
+          <option value="">All Chapters</option>
+        </select>
       </div>
       <div class="search-stats" id="search-stats"></div>
       <ul id="search-results"></ul>
@@ -210,18 +254,20 @@
   </div>
 
   <div class="content-wrapper">
-    <aside id="image-panel"><img id="verse-image" src="" alt="Verse"></aside>
-    <div class="translations" id="output">
-      <p style="color:var(--muted);padding:1rem;">Loading translations…</p>
+    <aside id="image-panel">
+      <img id="verse-image" src="" alt="Verse">
+    </aside>
+    <div class="translations" id="output">  
+      <p style="color:var(--muted);padding:1rem;">Select “Load” to begin.</p>
     </div>
   </div>
 
   <input type="range" id="verse-slider" disabled>
 
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // DOM refs
-    const primary         = document.getElementById('primary'),
+  (function(){
+    const loadBtn         = document.getElementById('load'),
+          primary         = document.getElementById('primary'),
           compareContainer= document.getElementById('compare-container'),
           bookSel         = document.getElementById('book'),
           chapSel         = document.getElementById('chap'),
@@ -237,6 +283,7 @@
           resultsList     = document.getElementById('search-results'),
           statsDiv        = document.getElementById('search-stats'),
           filtTrans       = document.getElementById('filter-translation'),
+          filtTestament   = document.getElementById('filter-testament'),
           filtBook        = document.getElementById('filter-book'),
           filtChapter     = document.getElementById('filter-chapter'),
           verseSlider     = document.getElementById('verse-slider');
@@ -246,81 +293,67 @@
     function fillSelect(sel, items){
       sel.innerHTML = '';
       items.forEach(i => sel.append(new Option(i.label, i.value)));
-      sel.disabled = items.length === 0;
+      sel.disabled = !items.length;
     }
 
     function nest(json){
       const o = {};
       (json.verses||[]).forEach(v => {
-        o[v.book_name] = o[v.book_name]||{};
-        o[v.book_name][v.chapter] = o[v.book_name][v.chapter]||[];
+        o[v.book_name] = o[v.book_name] || {};
+        o[v.book_name][v.chapter] = o[v.book_name][v.chapter] || [];
         o[v.book_name][v.chapter].push(v.text);
       });
       return o;
     }
 
-    function initializeUI(){
-      fillSelect(primary, Object.keys(transData).map(n=>({label:n,value:n})));
-      compareContainer.innerHTML = '';
-      Object.keys(transData).forEach(n=>{
-        const lbl = document.createElement('label');
-        lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
-        compareContainer.append(lbl);
-      });
-      fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
-      filtTrans.onchange && filtTrans.onchange();
-      fillSelect(bookSel, []);
-      fillSelect(chapSel, []);
-      fillSelect(verseSel, []);
-      prevBtn.disabled = nextBtn.disabled = true;
-      output.innerHTML = `<p style="color:var(--muted);padding:1rem;">Select a book.</p>`;
-      verseImg.src = '';
-      verseSlider.disabled = true;
-    }
+    // override primary.onchange so that selecting a language resets to 1:1:1
+    primary.onchange = () => {
+      if (!lists[primary.value]) return;
+      state = { idx:0, bkIdx:0, chIdx:0 };
+      fillSelect(bookSel, lists[primary.value].books.map((b,i)=>({label:b,value:i})));
+      bookSel.value = 0; bookSel.onchange();
+      updateURL();
+    };
 
-    // … Insert your existing onchange/navigation/search/renderAll handlers here …
+    // keep your existing bookSel.onchange, chapSel.onchange, verseSel.onchange,
+    // navigate(), updateURL(), renderAll(), handleDeepLink(), search handlers exactly unchanged
 
-    // Auto-load translations from GitHub
+    // AUTO-LOAD translations on startup
     (async function autoLoad(){
       const files = [
-        'Albanian.json',
-        'Deutsch.json',
-        'Dutch.json',
-        'English.json',
-        'Francais.json',
-        'Italian.json',
-        'Spanish.json',
-        'Turkish.json'
+        'Albanian.json','Deutsch.json','Dutch.json',
+        'English.json','Francais.json','Italian.json',
+        'Spanish.json','Turkish.json'
       ];
-      const baseURL = 'https://github.com/mdudumi/thebim/tree/main/thebim/Translations';
-      let got = 0;
-
-      for (let file of files){
+      const baseURL = 'https://raw.githubusercontent.com/mdudumi/thebim/main/thebim/Translations/';
+      for (let f of files){
         try {
-          const res = await fetch(baseURL + file);
-          if (!res.ok) throw new Error(res.statusText);
+          const res = await fetch(baseURL+f);
+          if (!res.ok) throw '';
           const json = await res.json();
-          transData[file.replace(/\.json$/i,'')] = nest(json);
-          got++;
-        } catch(err){
-          console.warn(`Failed to load ${file}:`, err);
-        }
+          const name = f.replace(/\.json$/i,'');
+          const nested = nest(json);
+          transData[name] = nested;
+          lists[name] = {
+            books: Object.keys(nested),
+            chapters: Object.fromEntries(
+              Object.entries(nested).map(([b,ch])=>[b,Object.keys(ch)])
+            )
+          };
+        } catch {}
       }
-
-      if (got){
-        initializeUI();
-        // Handle deep links if any
-        const p = new URLSearchParams(location.search);
-        if (p.has('primary')) { primary.value = p.get('primary'); primary.onchange(); }
-        if (p.has('book'))    { bookSel.value = p.get('book');     bookSel.onchange(); }
-        if (p.has('chap'))    { chapSel.value = p.get('chap');     chapSel.onchange(); }
-        if (p.has('verse'))   { verseSel.value = p.get('verse');   verseSel.onchange(); }
-      } else {
-        output.innerHTML = `<p style="color:var(--muted);padding:1rem;">Failed to load translations.</p>`;
+      const langs = Object.keys(transData);
+      if (!langs.length){
+        output.innerHTML = '<p style="color:red;padding:1rem;">Failed to load translations.</p>';
+        return;
       }
+      fillSelect(primary, langs.map(l=>({label:l,value:l})));
+      primary.disabled = false;
+      primary.value = langs[0];
+      primary.onchange();
     })();
-  });
+
+  })();
   </script>
 </body>
 </html>
-
