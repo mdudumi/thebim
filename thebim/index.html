@@ -176,7 +176,6 @@
       width: calc(100% - 2rem); margin: 0 1rem 1rem; display: block;
     }
 
-    /* MOBILE FRIENDLY ADJUSTMENTS */
     @media (max-width: 800px) {
       .controls {
         grid-template-columns: auto 1fr 1fr 1fr;
@@ -342,17 +341,13 @@
         verseImg.src = '';
         verseSlider.disabled = true;
 
-        // Now that data is loaded, handle any deep link in the URL:
         handleDeepLink();
       };
       inp.click();
     };
 
     primary.onchange = () => {
-      if (!lists[primary.value]) {
-        // no data yet for this translation
-        return;
-      }
+      if (!lists[primary.value]) return;
       state = { idx:0, bkIdx:0, chIdx:0 };
       const books = lists[primary.value].books;
       fillSelect(bookSel, books.map((b,i)=>({label:b,value:i})));
@@ -431,7 +426,7 @@
 
     function handleDeepLink(){
       const p = new URLSearchParams(location.search);
-      if (!Object.keys(lists).length) return;  // no data yet
+      if (!Object.keys(lists).length) return;
       if (p.has('primary') && lists[p.get('primary')]) {
         primary.value = p.get('primary');
         primary.onchange();
@@ -594,7 +589,58 @@
       prevBtn.disabled = state.idx === 0;
       nextBtn.disabled = state.idx >= total - 1;
     }
+
+    // --- AUTO-LOAD translations from GitHub ---
+    ;(async function autoLoadFromGitHub() {
+      const files = [
+        'kjv.json',
+        'niv.json'
+        // add your filenames here
+      ];
+      const baseURL = 'https://raw.githubusercontent.com/thebim/translations/main/';
+      let count = 0;
+
+      for (let file of files) {
+        try {
+          const res = await fetch(baseURL + file);
+          if (!res.ok) throw new Error(res.statusText);
+          const json = await res.json();
+          const name = file.replace(/\.json$/i, '');
+          const nested = nest(json);
+          transData[name] = nested;
+          const books = Object.keys(nested);
+          const chapters = {};
+          books.forEach(b => chapters[b] = Object.keys(nested[b]));
+          lists[name] = { books, chapters };
+          count++;
+        } catch (err) {
+          console.error(`Failed to load ${file}:`, err);
+        }
+      }
+
+      if (count > 0) {
+        fillSelect(primary, Object.keys(transData).map(n=>({label:n,value:n})));
+        compareContainer.innerHTML = '';
+        Object.keys(transData).forEach(n => {
+          const lbl = document.createElement('label');
+          lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
+          compareContainer.append(lbl);
+        });
+        fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
+        filtTrans.onchange();
+        fillSelect(bookSel, []);
+        fillSelect(chapSel, []);
+        fillSelect(verseSel, []);
+        prevBtn.disabled = nextBtn.disabled = true;
+        output.innerHTML = `<p style="color:var(--muted);padding:1rem;">Select a book.</p>`;
+        verseImg.src = '';
+        verseSlider.disabled = true;
+        handleDeepLink();
+      }
+    })();
+
   })();
   </script>
+
 </body>
 </html>
