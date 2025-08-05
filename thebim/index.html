@@ -213,7 +213,11 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
             compareClose  = document.getElementById('compare-close'),
             compareList   = document.getElementById('compare-list'),
             addEntry      = document.getElementById('add-compare-entry'),
-            compareResult = document.getElementById('compare-result');
+            compareResult = document.getElementById('compare-result'),
+            filterTrans   = document.getElementById('filter-translation'),
+            filterBook    = document.getElementById('filter-book'),
+            filterChap    = document.getElementById('filter-chapter');
+
       const apiUrl = 'https://api.github.com/repos/mdudumi/thebim/contents/thebim/Translations';
 
       let transData = {}, lists = {}, state = { idx:0, bkIdx:0, chIdx:0 }, compareEntries = [];
@@ -250,6 +254,32 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
         lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
         compareC.append(lbl);
       });
+
+      // Populate search modal filters: Bibles, Books, Chapters
+      fillSelect(filterTrans, [{ label: 'All Bibles', value: '' }].concat(names.map(n=>({ label:n, value:n }))));
+      filterTrans.onchange = () => {
+        const t = filterTrans.value;
+        if (t) {
+          fillSelect(filterBook, [{ label: 'All Books', value: '' }].concat(
+            lists[t].books.map(b=>({ label:b, value:b }))
+          ));
+        } else {
+          filterBook.innerHTML = '<option value="">All Books</option>';
+          filterBook.disabled = false;
+        }
+        filterChap.innerHTML = '<option value="">All Chapters</option>';
+        filterChap.disabled = false;
+      };
+      filterBook.onchange = () => {
+        const t = filterTrans.value, b = filterBook.value;
+        if (t && b) {
+          fillSelect(filterChap, [{ label: 'All Chapters', value: '' }].concat(
+            lists[t].chapters[b].map(c=>({ label:c, value:c }))
+          ));
+        } else {
+          filterChap.innerHTML = '<option value="">All Chapters</option>';
+        }
+      };
 
       // Handlers
       primary.onchange = () => {
