@@ -281,22 +281,22 @@
   </div>
   <input type="range" id="verse-slider" disabled>
 
-  <script>
+ <script>
   (async function(){
-    // Helpers & state
     const apiUrl = 'https://api.github.com/repos/mdudumi/thebim/contents/thebim/Translations';
-    let transData={}, lists={}, state={idx:0,bkIdx:0,chIdx:0};
+    let transData = {}, lists = {}, state = { idx: 0, bkIdx: 0, chIdx: 0 };
 
     function fillSelect(sel, items){
       sel.innerHTML = '';
-      items.forEach(i=> sel.append(new Option(i.label,i.value)));
+      items.forEach(i => sel.append(new Option(i.label, i.value)));
       sel.disabled = !items.length;
     }
+
     function nest(json){
-      const o={};
-      (json.verses||[]).forEach(v=>{
-        o[v.book_name]=o[v.book_name]||{};
-        o[v.book_name][v.chapter]=o[v.book_name][v.chapter]||[];
+      const o = {};
+      (json.verses || []).forEach(v => {
+        o[v.book_name] = o[v.book_name] || {};
+        o[v.book_name][v.chapter] = o[v.book_name][v.chapter] || [];
         o[v.book_name][v.chapter].push(v.text);
       });
       return o;
@@ -304,22 +304,22 @@
 
     // 1) fetch folder contents
     const files = await fetch(apiUrl)
-      .then(r=>r.json())
-      .catch(e=>{console.error(e);return[];});
+      .then(r => r.json())
+      .catch(e => { console.error(e); return []; });
 
     // 2) load each JSON
-    for(let f of files){
-      if(!f.name.endsWith('.json')) continue;
-      const name = f.name.replace(/\.json$/i,'');
-      try{
-        const data = await fetch(f.download_url).then(r=>r.json());
+    for (let f of files) {
+      if (!f.name.endsWith('.json')) continue;
+      const name = f.name.replace(/\.json$/i, '');
+      try {
+        const data = await fetch(f.download_url).then(r => r.json());
         const nested = nest(data);
-        transData[name]=nested;
-        const books=Object.keys(nested), chs={};
-        books.forEach(b=> chs[b]=Object.keys(nested[b]));
-        lists[name]={books,chapters:chs};
-      }catch(e){
-        console.warn('fail',f.name,e);
+        transData[name] = nested;
+        const books = Object.keys(nested), chs = {};
+        books.forEach(b => chs[b] = Object.keys(nested[b]));
+        lists[name] = { books, chapters: chs };
+      } catch (e) {
+        console.warn('fail', f.name, e);
       }
     }
 
@@ -346,122 +346,138 @@
           verseSlider     = document.getElementById('verse-slider');
 
     // 4) populate primary & compare & search filters
-    fillSelect(primary, Object.keys(transData).map(n=>({label:n,value:n})));
-    Object.keys(transData).forEach(n=>{
-      const lbl=document.createElement('label');
+    fillSelect(primary, Object.keys(transData).map(n => ({ label: n, value: n })));
+    Object.keys(transData).forEach(n => {
+      const lbl = document.createElement('label');
       lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
       compareC.append(lbl);
     });
-    fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
+    fillSelect(filtTrans, Object.keys(transData).map(n => ({ label: n, value: n })));
 
     // 5) define handlers
-    primary.onchange=()=>{
-      state={idx:0,bkIdx:0,chIdx:0};
-      const books=lists[primary.value].books;
-      fillSelect(bookSel,books.map((b,i)=>({label:b,value:i})));
-      fillSelect(chapSel,[]); fillSelect(verseSel,[]);
-      prevBtn.disabled=nextBtn.disabled=true;
-      output.innerHTML=<p style="color:var(--muted);padding:1rem;">Select a book.</p>;
-      verseImg.src=''; verseSlider.disabled=true;
+    primary.onchange = () => {
+      state = { idx: 0, bkIdx: 0, chIdx: 0 };
+      const books = lists[primary.value].books;
+      fillSelect(bookSel, books.map((b, i) => ({ label: b, value: i })));
+      fillSelect(chapSel, []); fillSelect(verseSel, []);
+      prevBtn.disabled = nextBtn.disabled = true;
+      output.innerHTML = `<p style="color:var(--muted);padding:1rem;">Select a book.</p>`;
+      verseImg.src = '';
+      verseSlider.disabled = true;
       updateURL();
     };
-    bookSel.onchange=()=>{
-      state.bkIdx=+bookSel.value;
-      const bk=lists[primary.value].books[state.bkIdx];
-      const chs=lists[primary.value].chapters[bk];
-      fillSelect(chapSel,chs.map((c,i)=>({label:c,value:i})));
-      fillSelect(verseSel,[]);
-      prevBtn.disabled=nextBtn.disabled=true;
-      output.innerHTML=<p style="color:var(--muted);padding:1rem;">Select a chapter.</p>;
-      verseImg.src=''; verseSlider.disabled=true;
-      updateURL();
-    };
-    chapSel.onchange=()=>{
-      state.chIdx=+chapSel.value; state.idx=0;
-      const bk=lists[primary.value].books[state.bkIdx];
-      const ch=lists[primary.value].chapters[bk][state.chIdx];
-      const verses=transData[primary.value][bk][ch]||[];
-      fillSelect(verseSel,verses.map((_,i)=>({label:i+1,value:i})));
-      prevBtn.disabled=nextBtn.disabled=false;
-      verseSlider.disabled=false;
-      verseSlider.max=verses.length-1;
-      verseSlider.value=0;
-      output.innerHTML='';
-      renderAll(); updateURL();
-    };
-    verseSel.onchange=()=>{
-      state.idx=+verseSel.value;
-      verseSlider.value=state.idx;
-      renderAll(); updateURL();
-    };
-    prevBtn.onclick=()=>navigate(-1);
-    nextBtn.onclick=()=>navigate(1);
-    verseSlider.oninput=()=>{
-      state.idx=+verseSlider.value;
-      verseSel.value=state.idx;
-      renderAll(); updateURL();
-    };
-    compareC.addEventListener('change',()=>{ if(!verseSel.disabled) renderAll(); });
 
-    filtTrans.onchange=()=>{
-      const t=filtTrans.value||primary.value;
-      const bs=lists[t]?.books||[];
-      fillSelect(filtBook,[{label:'All Books',value:''},...bs.map((b,i)=>({label:b,value:i}))]);
+    bookSel.onchange = () => {
+      state.bkIdx = +bookSel.value;
+      const bk = lists[primary.value].books[state.bkIdx];
+      const chs = lists[primary.value].chapters[bk];
+      fillSelect(chapSel, chs.map((c, i) => ({ label: c, value: i })));
+      fillSelect(verseSel, []);
+      prevBtn.disabled = nextBtn.disabled = true;
+      output.innerHTML = `<p style="color:var(--muted);padding:1rem;">Select a chapter.</p>`;
+      verseImg.src = '';
+      verseSlider.disabled = true;
+      updateURL();
+    };
+
+    chapSel.onchange = () => {
+      state.chIdx = +chapSel.value; state.idx = 0;
+      const bk = lists[primary.value].books[state.bkIdx];
+      const ch = lists[primary.value].chapters[bk][state.chIdx];
+      const verses = transData[primary.value][bk][ch] || [];
+      fillSelect(verseSel, verses.map((_, i) => ({ label: i+1, value: i })));
+      prevBtn.disabled = nextBtn.disabled = false;
+      verseSlider.disabled = false;
+      verseSlider.max = verses.length - 1;
+      verseSlider.value = 0;
+      output.innerHTML = '';
+      renderAll(); updateURL();
+    };
+
+    verseSel.onchange = () => {
+      state.idx = +verseSel.value;
+      verseSlider.value = state.idx;
+      renderAll(); updateURL();
+    };
+
+    prevBtn.onclick = () => navigate(-1);
+    nextBtn.onclick = () => navigate(1);
+
+    verseSlider.oninput = () => {
+      state.idx = +verseSlider.value;
+      verseSel.value = state.idx;
+      renderAll(); updateURL();
+    };
+
+    compareC.addEventListener('change', () => {
+      if (!verseSel.disabled) renderAll();
+    });
+
+    filtTrans.onchange = () => {
+      const t = filtTrans.value || primary.value;
+      const bs = lists[t]?.books || [];
+      fillSelect(filtBook, [{ label: 'All Books', value: '' }, ...bs.map((b, i) => ({ label: b, value: i }))]);
       filtBook.onchange();
     };
-    filtBook.onchange=()=>{
-      const t=filtTrans.value||primary.value;
-      const bi=filtBook.value;
-      const bk=bi===''?null:lists[t].books[+bi];
-      const cs=bk?lists[t].chapters[bk]:[];
-      fillSelect(filtChapter,[{label:'All Chapters',value:''},...cs.map((c,i)=>({label:c,value:i}))]);
+
+    filtBook.onchange = () => {
+      const t = filtTrans.value || primary.value;
+      const bi = filtBook.value;
+      const bk = bi === '' ? null : lists[t].books[+bi];
+      const cs = bk ? lists[t].chapters[bk] : [];
+      fillSelect(filtChapter, [{ label: 'All Chapters', value: '' }, ...cs.map((c, i) => ({ label: c, value: i }))]);
     };
 
-    globalSearchBtn.onclick=()=>{
+    globalSearchBtn.onclick = () => {
       searchModal.classList.remove('hidden');
-      globalInput.value=''; resultsList.innerHTML=''; statsDiv.textContent='';
+      globalInput.value = '';
+      resultsList.innerHTML = '';
+      statsDiv.textContent = '';
       filtTrans.focus();
     };
-    searchClose.onclick=()=>searchModal.classList.add('hidden');
-    globalInput.addEventListener('keydown',e=>{
-      if(e.key!=='Enter') return;
-      const term=e.target.value.trim().toLowerCase();
-      if(!term) return;
-      resultsList.innerHTML='<li>Searching…</li>'; statsDiv.textContent='';
-      const tf=filtTrans.value, tfm=filtTestament.value, bf=filtBook.value, cf=filtChapter.value;
-      let matches=[];
-      Object.entries(transData).forEach(([tn,bs])=>{
-        if(tf && tn!==tf) return;
-        lists[tn].books.forEach((bni,bii)=>{
-          if(bf!=='' && bii.toString()!==bf) return;
-          const isOT=bii<39;
-          if(tfm==='ot'&&!isOT) return;
-          if(tfm==='nt'&&isOT) return;
-          const chs=bs[bni]||{};
-          Object.entries(chs).forEach(([chn,vs],chi)=>{
-            if(cf!==''&&chi.toString()!==cf) return;
-            vs.forEach((txt,vi)=>{
-              if(txt.toLowerCase().includes(term)){
-                const s=txt.toLowerCase().indexOf(term);
-                const sn='…'+txt.substr(Math.max(0,s-20),term.length+40)+'…';
-                matches.push({tn,bii,chi,vi,sn});
+
+    searchClose.onclick = () => searchModal.classList.add('hidden');
+
+    globalInput.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const term = e.target.value.trim().toLowerCase();
+      if (!term) return;
+      resultsList.innerHTML = '<li>Searching…</li>';
+      statsDiv.textContent = '';
+      const tf = filtTrans.value, tfm = filtTestament.value, bf = filtBook.value, cf = filtChapter.value;
+      let matches = [];
+      Object.entries(transData).forEach(([tn, bs]) => {
+        if (tf && tn !== tf) return;
+        lists[tn].books.forEach((bni, bii) => {
+          if (bf !== '' && bii.toString() !== bf) return;
+          const isOT = bii < 39;
+          if (tfm === 'ot' && !isOT) return;
+          if (tfm === 'nt' && isOT) return;
+          const chs = bs[bni] || {};
+          Object.entries(chs).forEach(([chn, vs], chi) => {
+            if (cf !== '' && chi.toString() !== cf) return;
+            vs.forEach((txt, vi) => {
+              if (txt.toLowerCase().includes(term)) {
+                const s = txt.toLowerCase().indexOf(term);
+                const sn = '…' + txt.substr(Math.max(0, s-20), term.length + 40) + '…';
+                matches.push({ tn, bii, chi, vi, sn });
               }
             });
           });
         });
       });
-      statsDiv.textContent=Found ${matches.length} occurrence${matches.length!==1?'s':''};
-      resultsList.innerHTML='';
-      matches.forEach(m=>{
-        const bn=lists[m.tn].books[m.bii];
-        const cn=lists[m.tn].chapters[bn][m.chi];
-        const li=document.createElement('li');
+      statsDiv.textContent = `Found ${matches.length} occurrence${matches.length !== 1 ? 's' : ''}`;
+      resultsList.innerHTML = '';
+      matches.forEach(m => {
+        const bn = lists[m.tn].books[m.bii];
+        const cn = lists[m.tn].chapters[bn][m.chi];
+        const li = document.createElement('li');
         li.innerHTML = `<strong>[${m.tn}] ${bn} ${cn}:${m.vi+1}</strong><p><em>${m.sn}</em></p>`;
-        li.onclick=()=>{
-          primary.value=m.tn; primary.onchange();
-          bookSel.value=m.bii; bookSel.onchange();
-          chapSel.value=m.chi; chapSel.onchange();
-          verseSel.value=m.vi; verseSel.onchange();
+        li.onclick = () => {
+          primary.value = m.tn; primary.onchange();
+          bookSel.value = m.bii; bookSel.onchange();
+          chapSel.value = m.chi; chapSel.onchange();
+          verseSel.value = m.vi; verseSel.onchange();
           searchModal.classList.add('hidden');
         };
         resultsList.append(li);
@@ -469,89 +485,117 @@
     });
 
     function updateURL(){
-      const p=new URLSearchParams();
-      p.set('primary',primary.value);
-      p.set('book',state.bkIdx);
-      p.set('chap',state.chIdx);
-      p.set('verse',state.idx);
-      history.replaceState(null,'','?'+p.toString());
-      document.title=${lists[primary.value].books[state.bkIdx]} ${state.chIdx+1}:${state.idx+1};
+      const p = new URLSearchParams();
+      p.set('primary', primary.value);
+      p.set('book', state.bkIdx);
+      p.set('chap', state.chIdx);
+      p.set('verse', state.idx);
+      history.replaceState(null, '', '?' + p.toString());
+      document.title = `${lists[primary.value].books[state.bkIdx]} ${state.chIdx+1}:${state.idx+1}`;
     }
+
     function renderAll(){
-      output.innerHTML='';
-      const {idx,bkIdx,chIdx}=state;
-      const main=primary.value;
-      const bk=lists[main].books[bkIdx];
-      const ch=lists[main].chapters[bk][chIdx];
-      const vs=transData[main][bk][ch]||[];
-      const total=vs.length;
-      verseImg.src=images/${bkIdx+1}/${chIdx+1}/${idx+1}.jpg;
-      const checked=Array.from(compareC.querySelectorAll('input:checked')).map(i=>i.value).filter(n=>n!==main);
-      const names=[main,...checked];
-      names.forEach(name=>{
-        const b2=lists[name].books[bkIdx];
-        const c2s=lists[name].chapters[b2]||[];
-        const txt=transData[name][b2]?.[c2s[chIdx]]?.[idx]||'';
-        const card=document.createElement('div');
-        card.className='card';
-        card.innerHTML = `<h2>${name}</h2><p>${txt}</p><div class="prog">${idx+1} / ${total}</div>`;
-        const icons=document.createElement('div'); icons.className='icons';
-        const noteBtn=document.createElement('button');
-        noteBtn.innerText='📝'; noteBtn.title='Note';
-        noteBtn.onclick=()=>{
-          const vid=${name}|${bkIdx}|${chIdx}|${idx};
-          const notes=JSON.parse(localStorage.getItem('notes')||'{}');
-          const n=prompt('Note:',notes[vid]||'');
-          notes[vid]=n; localStorage.setItem('notes',JSON.stringify(notes));
+      output.innerHTML = '';
+      const { idx, bkIdx, chIdx } = state;
+      const main = primary.value;
+      const bk = lists[main].books[bkIdx];
+      const ch = lists[main].chapters[bk][chIdx];
+      const vs = transData[main][bk][ch] || [];
+      const total = vs.length;
+      verseImg.src = `images/${bkIdx+1}/${chIdx+1}/${idx+1}.jpg`;
+
+      const checked = Array.from(compareC.querySelectorAll('input:checked'))
+        .map(i => i.value)
+        .filter(n => n !== main);
+
+      const names = [ main, ...checked ];
+      names.forEach(name => {
+        const b2 = lists[name].books[bkIdx];
+        const c2s = lists[name].chapters[b2] || [];
+        const txt = transData[name][b2]?.[c2s[chIdx]]?.[idx] || '';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<h2>${name}</h2>
+                          <p>${txt}</p>
+                          <div class="prog">${idx+1} / ${total}</div>`;
+        const icons = document.createElement('div');
+        icons.className = 'icons';
+
+        const noteBtn = document.createElement('button');
+        noteBtn.innerText = '📝';
+        noteBtn.title = 'Note';
+        noteBtn.onclick = () => {
+          const vid = `${name}|${bkIdx}|${chIdx}|${idx}`;
+          const notes = JSON.parse(localStorage.getItem('notes') || '{}');
+          const n = prompt('Note:', notes[vid] || '');
+          notes[vid] = n;
+          localStorage.setItem('notes', JSON.stringify(notes));
         };
-        const copyBtn=document.createElement('button');
-        copyBtn.innerText='📋'; copyBtn.title='Copy';
-        copyBtn.onclick=()=>navigator.clipboard.writeText(txt).then(()=>alert('Copied!'));
-        const shareBtn=document.createElement('button');
-        shareBtn.innerText='🔗'; shareBtn.title='Share';
-        shareBtn.onclick=()=>{
-          const url=${location.origin}${location.pathname}?primary=${name}&book=${bkIdx}&chap=${chIdx}&verse=${idx};
-          if(navigator.share) navigator.share({title:${bk} ${chIdx+1}:${idx+1},url});
-          else navigator.clipboard.writeText(url).then(()=>alert('Link copied!'));
+
+        const copyBtn = document.createElement('button');
+        copyBtn.innerText = '📋';
+        copyBtn.title = 'Copy';
+        copyBtn.onclick = () => navigator.clipboard.writeText(txt).then(() => alert('Copied!'));
+
+        const shareBtn = document.createElement('button');
+        shareBtn.innerText = '🔗';
+        shareBtn.title = 'Share';
+        shareBtn.onclick = () => {
+          const url = `${location.origin}${location.pathname}?primary=${name}&book=${bkIdx}&chap=${chIdx}&verse=${idx}`;
+          if (navigator.share) {
+            navigator.share({ title: `${bk} ${chIdx+1}:${idx+1}`, url });
+          } else {
+            navigator.clipboard.writeText(url).then(() => alert('Link copied!'));
+          }
         };
-        icons.append(noteBtn,copyBtn,shareBtn);
+
+        icons.append(noteBtn, copyBtn, shareBtn);
         card.append(icons);
         output.append(card);
       });
-      prevBtn.disabled=state.idx===0;
-      nextBtn.disabled=state.idx>=total-1;
+
+      prevBtn.disabled = state.idx === 0;
+      nextBtn.disabled = state.idx >= total - 1;
     }
+
     function navigate(d){
-      const m=+verseSlider.max;
-      state.idx=Math.max(0,Math.min(m,state.idx+d));
-      verseSel.value=state.idx; verseSlider.value=state.idx;
+      const m = +verseSlider.max;
+      state.idx = Math.max(0, Math.min(m, state.idx + d));
+      verseSel.value = state.idx;
+      verseSlider.value = state.idx;
       renderAll(); updateURL();
     }
+
     function handleDeepLink(){
-      const p=new URLSearchParams(location.search);
-      if(p.has('primary')&&lists[p.get('primary')]){
-        primary.value=p.get('primary'); primary.onchange();
+      const p = new URLSearchParams(location.search);
+      if (p.has('primary') && lists[p.get('primary')]) {
+        primary.value = p.get('primary');
+        primary.onchange();
       }
-      if(p.has('book')){
-        bookSel.value=p.get('book'); bookSel.onchange();
+      if (p.has('book')) {
+        bookSel.value = p.get('book');
+        bookSel.onchange();
       }
-      if(p.has('chap')){
-        chapSel.value=p.get('chap'); chapSel.onchange();
+      if (p.has('chap')) {
+        chapSel.value = p.get('chap');
+        chapSel.onchange();
       }
-      if(p.has('verse')){
-        verseSel.value=p.get('verse'); verseSel.onchange();
+      if (p.has('verse')) {
+        verseSel.value = p.get('verse');
+        verseSel.onchange();
       }
     }
 
     // 6) auto-select first translation
-    primary.disabled=false;
-    if(primary.options.length){
-primary.selectedIndex = 0;
-primary.dispatchEvent(new Event('change'));
+    primary.disabled = false;
+    if (primary.options.length) {
+      primary.selectedIndex = 0;
+      primary.dispatchEvent(new Event('change'));
     }
     handleDeepLink();
   })();
   </script>
 </body>
 </html>
+
 
