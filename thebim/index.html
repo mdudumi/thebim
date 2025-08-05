@@ -1,558 +1,571 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Interactive Multi-Translation Bible</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
   <style>
     :root {
-      --bg: #f0f4f8;
-      --panel-bg: #fff;
-      --border: #dde3ea;
-      --primary: #1d4ed8;
-      --primary-dark: #1e40af;
+      --bg-light: #f9fafb;
+      --bg-dark: #1f2937;
+      --panel-light: #ffffff;
+      --panel-dark: #374151;
+      --border-light: #e5e7eb;
+      --border-dark: #4b5563;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
       --secondary: #10b981;
       --accent: #f59e0b;
-      --text: #334155;
-      --muted: #64748b;
-      --radius: 8px;
-      --shadow: 0 2px 8px rgba(0,0,0,0.07);
+      --text-light: #111827;
+      --text-dark: #f3f4f6;
+      --muted-light: #6b7280;
+      --muted-dark: #9ca3af;
+      --radius: 0.5rem;
+      --shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      --transition: all 0.2s ease-in-out;
     }
-    *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+    [data-theme="dark"] {
+      --bg: var(--bg-dark);
+      --panel: var(--panel-dark);
+      --border: var(--border-dark);
+      --text: var(--text-dark);
+      --muted: var(--muted-dark);
+    }
+    [data-theme="light"] {
+      --bg: var(--bg-light);
+      --panel: var(--panel-light);
+      --border: var(--border-light);
+      --text: var(--text-light);
+      --muted: var(--muted-light);
+    }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
-      display: flex; flex-direction: column;
-      font-family: 'Roboto', sans-serif;
-      background: var(--bg); color: var(--text);
-      height: 100vh; overflow: hidden;
+      font-family: "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      transition: var(--transition);
+    }
+    header {
+      padding: 1rem 2rem;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     h1 {
-      text-align: center; padding: 1rem; font-weight: 500;
-      background: #dde3ea; box-shadow: var(--shadow);
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.25rem;
+      color: var(--muted);
+      transition: var(--transition);
     }
     .controls {
       display: grid;
-      grid-template-columns: 160px 1fr 120px 100px 80px 120px;
-      gap: .75rem; padding: .75rem 1rem;
-      background: var(--panel-bg); align-items: center;
-      box-shadow: var(--shadow); z-index: 5;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) 48px 48px 48px;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
     }
-    .controls>* {
-      background: var(--panel-bg);
+    .controls select,
+    .controls button.search-btn,
+    .controls button.nav-btn {
+      padding: 0.5rem 0.75rem;
+      font-size: 1rem;
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: .5rem; font-size: .95rem;
-      transition: border-color .2s, box-shadow .2s;
+      background: var(--panel);
+      transition: var(--transition);
     }
-    .controls>*:focus {
+    .controls select:focus,
+    .controls button:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(29,78,216,.2);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     }
-    .controls select {
-      appearance: none; cursor: pointer;
-      background: var(--panel-bg)
-        url("data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><polyline points='4,6 8,10 12,6' fill='none' stroke='%2364768B' stroke-width='2'/></svg>")
-        no-repeat right .75rem center / 12px;
-    }
-    .controls button {
-      background: var(--primary); color: #fff;
-      border: none; border-radius: var(--radius);
-      cursor: pointer; font-weight: 500;
-      transition: background .2s, transform .1s;
-    }
-    .controls button:disabled {
-      background: var(--border); cursor: default;
-    }
-    .controls button:not(:disabled):hover {
-      background: var(--primary-dark); transform: translateY(-1px);
-    }
-    #compare-container {
-      display: flex; flex-wrap: wrap; gap: .5rem;
-      max-height: 4.5rem; overflow-y: auto; padding: .25rem;
-      border: 1px solid var(--border); background: #fafbfc;
-    }
-    #compare-container label {
-      display: flex; align-items: center; gap: .25rem;
-      background: var(--secondary); color: #fff;
-      padding: .25rem .5rem; border-radius: 999px;
-      cursor: pointer; font-size: .85rem;
-      transition: background .2s;
-    }
-    #compare-container label:hover { background: #0f766e; }
-    #compare-container input { width: 16px; height: 16px; accent-color: #fff; }
-    #global-search-btn { font-size: 1.2rem; background: var(--accent); color: #fff; }
-
-    #search-modal.hidden { display: none; }
-    #search-modal {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 20;
-    }
-    .search-overlay {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.4);
-    }
-    .search-panel {
-      position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
-      width: 90%; max-width: 600px;
-      background: var(--panel-bg); border-radius: var(--radius);
-      padding: 1rem; box-shadow: var(--shadow);
-    }
-    #search-close {
-      float: right; background: none; border: none; font-size: 1.2rem;
+    .controls button.nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
     }
-    #search-input-global {
-      width: 100%; padding: .5rem; font-size: 1rem;
-      border: 1px solid var(--border); border-radius: 4px;
+    .controls button.search-btn {
+      cursor: pointer;
+    }
+    .controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .compare-list {
+      display: flex;
+      overflow-x: auto;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+    }
+    .compare-list label {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: var(--secondary);
+      color: #fff;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .compare-list input {
+      accent-color: #fff;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      overflow: hidden;
+    }
+    .verse-image-wrapper {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      overflow: hidden;
+    }
+    #verse-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .translations {
+      padding: 1rem 2rem;
+      overflow-y: auto;
+      background: var(--bg);
+    }
+    .card {
+      background: var(--panel);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+    .card h2 {
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+    }
+    .card p {
+      flex: 1;
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+    }
+    .progress {
+      text-align: right;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .icons {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .icons button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.125rem;
+      color: var(--muted);
+      transition: var(--transition);
+    }
+    .icons button:hover {
+      color: var(--accent);
+    }
+    /* Search Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+    }
+    .modal.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal .panel {
+      background: var(--panel);
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 600px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      max-height: 80vh;
+      overflow: auto;
+    }
+    .modal header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .modal header h2 {
+      font-size: 1.25rem;
+      color: var(--primary);
+    }
+    .modal header button {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       margin-bottom: 1rem;
     }
     .search-filters {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px,1fr));
-      gap: .5rem; margin-bottom: .75rem;
-      background: var(--panel-bg); padding: .5rem;
-      border-radius: var(--radius); box-shadow: var(--shadow);
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
     }
     .search-filters select {
-      padding: .5rem; font-size: .95rem;
-      border: 1px solid var(--border); border-radius: var(--radius);
-      background: var(--panel-bg);
+      padding: 0.5rem;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
     }
     .search-stats {
-      margin-bottom: .5rem;
-      font-size: .95rem; color: var(--muted);
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
     }
-    #search-results {
-      list-style: none; max-height: 50vh; overflow-y: auto; padding: 0;
+    #searchResults {
+      list-style: none;
+      max-height: 50vh;
+      overflow-y: auto;
+      padding: 0;
     }
-    #search-results li {
-      padding: .5rem; border-bottom: 1px solid var(--border);
-      cursor: pointer; transition: background .2s;
+    #searchResults li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
     }
-    #search-results li:hover { background: var(--bg); }
-
-    .content-wrapper {
-      flex: 1; display: flex; overflow: hidden;
+    #searchResults li:hover {
+      background: var(--bg);
     }
-    aside#image-panel {
-      flex: 0 0 40%; background: var(--panel-bg);
-      border-right: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1rem; overflow: hidden;
-    }
-    #verse-image {
-      width: 100%; height: auto; object-fit: contain;
-    }
-    .translations {
-      flex: 1; overflow-y: auto; padding: 1rem; background: #f9fafb;
-    }
-    .card {
-      background: var(--panel-bg);
-      border-left: 4px solid var(--accent);
-      border-radius: var(--radius); box-shadow: var(--shadow);
-      margin-bottom: 1rem; padding: 1rem;
-      display: flex; flex-direction: column; position: relative;
-    }
-    .card h2 {
-      font-size: 1.1rem; color: var(--primary);
-      margin-bottom: .5rem; font-weight: 500;
-    }
-    .card p {
-      flex: 1; overflow-y: auto; line-height: 1.5;
-      font-size: .95rem; margin-bottom: .5rem;
-    }
-    .card .prog {
-      text-align: right; font-size: .85rem; color: var(--muted);
-    }
-    .icons {
-      position: absolute; top: 8px; right: 8px; display: flex; gap: 8px;
-    }
-    .icons button {
-      background: none; border: none; cursor: pointer;
-      font-size: 1.2rem; color: var(--muted);
-    }
-    .icons button:hover { color: var(--accent); }
-
-    #verse-slider {
-      width: calc(100% - 2rem); margin: 0 1rem 1rem; display: block;
-    }
-
-    /* Mobile‐friendly overrides */
-    @media (max-width: 800px) {
-      /* Stack controls vertically for easier thumb navigation */
-      .controls {
-        display: flex;
-        flex-direction: column;
-        gap: .5rem;
-        padding: .75rem 1rem;
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
       }
-      .controls > * {
-        width: 100%;
-      }
-
-      /* Make the compare list scrollable horizontally */
-      #compare-container {
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        gap: .5rem;
-        padding: .5rem 0;
-      }
-      #compare-container label {
-        flex: 0 0 auto;
-      }
-
-      /* Optimize the image panel height */
-      aside#image-panel {
-        flex: 0 0 auto;
-        width: 100%;
+      .verse-image-wrapper {
         border-right: none;
         border-bottom: 1px solid var(--border);
-        padding: .75rem 1rem;
       }
-      #verse-image {
-        max-height: 200px;
-        margin: 0 auto;
-        display: block;
-      }
-
-      /* Tweak translation cards for mobile readability */
-      .translations { padding: 1rem; }
-      .card {
-        margin-bottom: .75rem;
-        padding: .75rem;
-      }
-      .card h2 { font-size: 1rem; }
-      .card p { font-size: .9rem; line-height: 1.4; }
-
-      /* Adjust header and slider spacing */
-      h1 { font-size: 1.25rem; padding: .75rem; }
-      #verse-slider { margin: .5rem 1rem; }
-
-      /* Improve touch‐target sizes */
-      .controls button,
-      .controls select {
-        padding: .75rem;
-        font-size: 1rem;
-      }
-
-      /* Simplify search modal filters */
-      .search-filters { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
-  <h1>Bible Interactive Model</h1>
+  <header>
+    <h1>Interactive Bible</h1>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+  </header>
+
   <div class="controls">
-    <select id="primary" disabled></select>
-    <div id="compare-container"></div>
-    <select id="book" disabled></select>
-    <select id="chap" disabled></select>
-    <select id="verse" disabled></select>
-    <button id="prev" disabled>◀</button>
-    <button id="next" disabled>▶</button>
-    <button id="global-search-btn" title="Search">🔎</button>
+    <select id="primary"></select>
+    <div class="compare-list" id="compareContainer"></div>
+    <select id="book"></select>
+    <select id="chap"></select>
+    <select id="verse"></select>
+    <button class="nav-btn" id="prev" aria-label="Previous">◀</button>
+    <button class="nav-btn" id="next" aria-label="Next">▶</button>
+    <button class="search-btn" id="globalSearchBtn" aria-label="Search">🔎</button>
   </div>
-  <div id="search-modal" class="hidden">
-    <div class="search-overlay"></div>
-    <div class="search-panel">
-      <button id="search-close">✖</button>
-      <input id="search-input-global" placeholder="Search all verses…">
+
+  <main>
+    <aside class="verse-image-wrapper">
+      <img id="verse-image" src="" alt="Verse illustration" />
+    </aside>
+    <section class="translations" id="output">
+      <p style="color: var(--muted);">Loading translations…</p>
+    </section>
+  </main>
+
+  <div class="modal" id="searchModal">
+    <div class="panel">
+      <header>
+        <h2>Search All Verses</h2>
+        <button id="searchClose" aria-label="Close">✖</button>
+      </header>
+      <input id="searchInputGlobal" class="search-input" placeholder="Search all verses…" />
       <div class="search-filters">
-        <select id="filter-translation"><option value="">All Bibles</option></select>
-        <select id="filter-testament">
+        <select id="filterTranslation"><option value="">All Bibles</option></select>
+        <select id="filterTestament">
           <option value="">Both</option>
           <option value="ot">Old Testament</option>
           <option value="nt">New Testament</option>
         </select>
-        <select id="filter-book"><option value="">All Books</option></select>
-        <select id="filter-chapter"><option value="">All Chapters</option></select>
+        <select id="filterBook"><option value="">All Books</option></select>
+        <select id="filterChapter"><option value="">All Chapters</option></select>
       </div>
-      <div class="search-stats" id="search-stats"></div>
-      <ul id="search-results"></ul>
+      <div class="search-stats" id="searchStats"></div>
+      <ul id="searchResults"></ul>
     </div>
   </div>
-  <div class="content-wrapper">
-    <aside id="image-panel">
-      <img id="verse-image" src="" alt="Verse">
-    </aside>
-    <div class="translations" id="output">
-      <p style="color:var(--muted);padding:1rem;">Loading translations…</p>
-    </div>
-  </div>
-  <input type="range" id="verse-slider" disabled>
 
   <script>
-  (async function(){
-    // Helpers & state
-    const apiUrl = 'https://api.github.com/repos/mdudumi/thebim/contents/thebim/Translations';
-    let transData={}, lists={}, state={idx:0,bkIdx:0,chIdx:0};
+  (function(){
+    // Theme toggle
+    const themeToggle = document.getElementById("themeToggle");
+    themeToggle.addEventListener("click", ()=>{
+      const html = document.documentElement;
+      const next = html.getAttribute("data-theme")==="light" ? "dark" : "light";
+      html.setAttribute("data-theme", next);
+      themeToggle.textContent = next==="light" ? "🌙" : "☀️";
+    });
 
+    // API & state
+    const apiUrl = 'https://api.github.com/repos/mdudumi/thebim/contents/thebim/Translations';
+    let transData = {}, lists = {}, state = {idx:0,bkIdx:0,chIdx:0};
+
+    // Helpers
     function fillSelect(sel, items){
       sel.innerHTML = '';
-      items.forEach(i=> sel.append(new Option(i.label,i.value)));
+      items.forEach(i=> sel.append(new Option(i.label, i.value)));
       sel.disabled = !items.length;
     }
     function nest(json){
-      const o={};
+      const o = {};
       (json.verses||[]).forEach(v=>{
-        o[v.book_name]=o[v.book_name]||{};
-        o[v.book_name][v.chapter]=o[v.book_name][v.chapter]||[];
+        o[v.book_name] = o[v.book_name]||{};
+        o[v.book_name][v.chapter] = o[v.book_name][v.chapter]||[];
         o[v.book_name][v.chapter].push(v.text);
       });
       return o;
     }
 
-    // 1) fetch folder contents
-    const files = await fetch(apiUrl)
-      .then(r=>r.json())
-      .catch(e=>{console.error(e);return[];});
+    // Fetch translation files
+    fetch(apiUrl).then(r=>r.json()).then(files=>{
+      files.filter(f=>f.name.endsWith('.json')).forEach(f=>{
+        const name = f.name.replace(/\.json$/i,'');
+        fetch(f.download_url).then(r=>r.json()).then(data=>{
+          const nested = nest(data);
+          transData[name] = nested;
+          const books = Object.keys(nested);
+          const chs = {};
+          books.forEach(b=> chs[b] = Object.keys(nested[b]));
+          lists[name] = { books, chapters: chs };
+        });
+      });
+    }).finally(initUI);
 
-    // 2) load each JSON
-    for(let f of files){
-      if(!f.name.endsWith('.json')) continue;
-      const name = f.name.replace(/\.json$/i,'');
-      try{
-        const data = await fetch(f.download_url).then(r=>r.json());
-        const nested = nest(data);
-        transData[name]=nested;
-        const books=Object.keys(nested), chs={};
-        books.forEach(b=> chs[b]=Object.keys(nested[b]));
-        lists[name]={books,chapters:chs};
-      }catch(e){
-        console.warn('fail',f.name,e);
+    // Initialize UI once data loaded
+    function initUI(){
+      // Elements
+      const primary       = document.getElementById('primary');
+      const compareC      = document.getElementById('compareContainer');
+      const bookSel       = document.getElementById('book');
+      const chapSel       = document.getElementById('chap');
+      const verseSel      = document.getElementById('verse');
+      const prevBtn       = document.getElementById('prev');
+      const nextBtn       = document.getElementById('next');
+      const output        = document.getElementById('output');
+      const verseImg      = document.getElementById('verse-image');
+      const searchBtn     = document.getElementById('globalSearchBtn');
+      const modal         = document.getElementById('searchModal');
+      const searchClose   = document.getElementById('searchClose');
+      const searchInput   = document.getElementById('searchInputGlobal');
+      const resultsList   = document.getElementById('searchResults');
+      const statsDiv      = document.getElementById('searchStats');
+      const filtTrans     = document.getElementById('filterTranslation');
+      const filtTest      = document.getElementById('filterTestament');
+      const filtBook      = document.getElementById('filterBook');
+      const filtChap      = document.getElementById('filterChapter');
+
+      // Populate primary & compare & filter translation
+      fillSelect(primary, Object.keys(transData).map(n=>({label:n,value:n})));
+      Object.keys(transData).forEach(n=>{
+        const lbl = document.createElement('label');
+        lbl.innerHTML = `<input type="checkbox" value="${n}"> ${n}`;
+        compareC.append(lbl);
+      });
+      fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
+
+      // Handlers
+      primary.onchange = ()=> {
+        state = {idx:0,bkIdx:0,chIdx:0};
+        const books = lists[primary.value].books;
+        fillSelect(bookSel, books.map((b,i)=>({label:b,value:i})));
+        fillSelect(chapSel, []);
+        fillSelect(verseSel, []);
+        prevBtn.disabled = nextBtn.disabled = true;
+        output.innerHTML = `<p style="color:var(--muted);">Select a book.</p>`;
+        verseImg.src = '';
+      };
+      bookSel.onchange = ()=> {
+        state.bkIdx = +bookSel.value;
+        const bk = lists[primary.value].books[state.bkIdx];
+        const chs = lists[primary.value].chapters[bk];
+        fillSelect(chapSel, chs.map((c,i)=>({label:c,value:i})));
+        fillSelect(verseSel, []);
+        prevBtn.disabled = nextBtn.disabled = true;
+        output.innerHTML = `<p style="color:var(--muted);">Select a chapter.</p>`;
+        verseImg.src = '';
+      };
+      chapSel.onchange = ()=> {
+        state.chIdx = +chapSel.value;
+        state.idx = 0;
+        const bk = lists[primary.value].books[state.bkIdx];
+        const ch = lists[primary.value].chapters[bk][state.chIdx];
+        const verses = transData[primary.value][bk][ch]||[];
+        fillSelect(verseSel, verses.map((_,i)=>({label:i+1,value:i})));
+        prevBtn.disabled = nextBtn.disabled = false;
+        verseSel.value = 0;
+        renderAll();
+      };
+      verseSel.onchange = ()=> {
+        state.idx = +verseSel.value;
+        renderAll();
+      };
+      prevBtn.onclick = ()=> navigate(-1);
+      nextBtn.onclick = ()=> navigate(1);
+
+      function renderAll(){
+        output.innerHTML = '';
+        const {idx,bkIdx,chIdx} = state;
+        const main = primary.value;
+        const bk = lists[main].books[bkIdx];
+        const ch = lists[main].chapters[bk][chIdx];
+        const vs = transData[main][bk][ch]||[];
+        verseImg.src = `images/${bkIdx+1}/${chIdx+1}/${idx+1}.jpg`;
+        const checked = Array.from(compareC.querySelectorAll('input:checked'))
+                             .map(i=>i.value)
+                             .filter(n=>n!==main);
+        const names = [main, ...checked];
+        names.forEach(name=>{
+          const b2 = lists[name].books[bkIdx];
+          const c2s = lists[name].chapters[b2]||[];
+          const txt = transData[name][b2]?.[c2s[chIdx]]?.[idx]||'';
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <h2>${name}</h2>
+            <p>${txt}</p>
+            <div class="progress">${idx+1} / ${vs.length}</div>
+            <div class="icons">
+              <button title="Note">📝</button>
+              <button title="Copy">📋</button>
+              <button title="Share">🔗</button>
+            </div>`;
+          output.append(card);
+        });
+        prevBtn.disabled = state.idx===0;
+        nextBtn.disabled = state.idx >= vs.length-1;
+        verseSel.value = state.idx;
       }
-    }
+      function navigate(dir){
+        const bk = lists[primary.value].books[state.bkIdx];
+        const ch = lists[primary.value].chapters[bk][state.chIdx];
+        const max = (transData[primary.value][bk][ch]||[]).length - 1;
+        state.idx = Math.min(max, Math.max(0, state.idx + dir));
+        renderAll();
+      }
 
-    // 3) grab DOM
-    const primary         = document.getElementById('primary'),
-          compareC        = document.getElementById('compare-container'),
-          bookSel         = document.getElementById('book'),
-          chapSel         = document.getElementById('chap'),
-          verseSel        = document.getElementById('verse'),
-          prevBtn         = document.getElementById('prev'),
-          nextBtn         = document.getElementById('next'),
-          output          = document.getElementById('output'),
-          verseImg        = document.getElementById('verse-image'),
-          globalSearchBtn = document.getElementById('global-search-btn'),
-          searchModal     = document.getElementById('search-modal'),
-          searchClose     = document.getElementById('search-close'),
-          globalInput     = document.getElementById('search-input-global'),
-          resultsList     = document.getElementById('search-results'),
-          statsDiv        = document.getElementById('search-stats'),
-          filtTrans       = document.getElementById('filter-translation'),
-          filtTestament   = document.getElementById('filter-testament'),
-          filtBook        = document.getElementById('filter-book'),
-          filtChapter     = document.getElementById('filter-chapter'),
-          verseSlider     = document.getElementById('verse-slider');
-
-    // 4) populate primary & compare & search filters
-    fillSelect(primary, Object.keys(transData).map(n=>({label:n,value:n})));
-    Object.keys(transData).forEach(n=>{
-      const lbl=document.createElement('label');
-      lbl.innerHTML=`<input type="checkbox" value="${n}"> ${n}`;
-      compareC.append(lbl);
-    });
-    fillSelect(filtTrans, Object.keys(transData).map(n=>({label:n,value:n})));
-
-    // 5) define handlers
-    primary.onchange=()=>{
-      state={idx:0,bkIdx:0,chIdx:0};
-      const books=lists[primary.value].books;
-      fillSelect(bookSel,books.map((b,i)=>({label:b,value:i})));
-      fillSelect(chapSel,[]); fillSelect(verseSel,[]);
-      prevBtn.disabled=nextBtn.disabled=true;
-      output.innerHTML=`<p style="color:var(--muted);padding:1rem;">Select a book.</p>`;
-      verseImg.src=''; verseSlider.disabled=true;
-      updateURL();
-    };
-    bookSel.onchange=()=>{
-      state.bkIdx=+bookSel.value;
-      const bk=lists[primary.value].books[state.bkIdx];
-      const chs=lists[primary.value].chapters[bk];
-      fillSelect(chapSel,chs.map((c,i)=>({label:c,value:i})));
-      fillSelect(verseSel,[]);
-      prevBtn.disabled=nextBtn.disabled=true;
-      output.innerHTML=`<p style="color:var(--muted);padding:1rem;">Select a chapter.</p>`;
-      verseImg.src=''; verseSlider.disabled=true;
-      updateURL();
-    };
-    chapSel.onchange=()=>{
-      state.chIdx=+chapSel.value; state.idx=0;
-      const bk=lists[primary.value].books[state.bkIdx];
-      const ch=lists[primary.value].chapters[bk][state.chIdx];
-      const verses=transData[primary.value][bk][ch]||[];
-      fillSelect(verseSel,verses.map((_,i)=>({label:i+1,value:i})));
-      prevBtn.disabled=nextBtn.disabled=false;
-      verseSlider.disabled=false;
-      verseSlider.max=verses.length-1;
-      verseSlider.value=0;
-      output.innerHTML='';
-      renderAll(); updateURL();
-    };
-    verseSel.onchange=()=>{
-      state.idx=+verseSel.value;
-      verseSlider.value=state.idx;
-      renderAll(); updateURL();
-    };
-    prevBtn.onclick=()=>navigate(-1);
-    nextBtn.onclick=()=>navigate(1);
-    verseSlider.oninput=()=>{
-      state.idx=+verseSlider.value;
-      verseSel.value=state.idx;
-      renderAll(); updateURL();
-    };
-    compareC.addEventListener('change',()=>{ if(!verseSel.disabled) renderAll(); });
-
-    filtTrans.onchange=()=>{
-      const t=filtTrans.value||primary.value;
-      const bs=lists[t]?.books||[];
-      fillSelect(filtBook,[{label:'All Books',value:''},...bs.map((b,i)=>({label:b,value:i}))]);
-      filtBook.onchange();
-    };
-    filtBook.onchange=()=>{
-      const t=filtTrans.value||primary.value;
-      const bi=filtBook.value;
-      const bk=bi===''?null:lists[t].books[+bi];
-      const cs=bk?lists[t].chapters[bk]:[];
-      fillSelect(filtChapter,[{label:'All Chapters',value:''},...cs.map((c,i)=>({label:c,value:i}))]);
-    };
-
-    globalSearchBtn.onclick=()=>{
-      searchModal.classList.remove('hidden');
-      globalInput.value=''; resultsList.innerHTML=''; statsDiv.textContent='';
-      filtTrans.focus();
-    };
-    searchClose.onclick=()=>searchModal.classList.add('hidden');
-    globalInput.addEventListener('keydown',e=>{
-      if(e.key!=='Enter') return;
-      const term=e.target.value.trim().toLowerCase();
-      if(!term) return;
-      resultsList.innerHTML='<li>Searching…</li>'; statsDiv.textContent='';
-      const tf=filtTrans.value, tfm=filtTestament.value, bf=filtBook.value, cf=filtChapter.value;
-      let matches=[];
-      Object.entries(transData).forEach(([tn,bs])=>{
-        if(tf && tn!==tf) return;
-        lists[tn].books.forEach((bni,bii)=>{
-          if(bf!=='' && bii.toString()!==bf) return;
-          const isOT=bii<39;
-          if(tfm==='ot'&&!isOT) return;
-          if(tfm==='nt'&&isOT) return;
-          const chs=bs[bni]||{};
-          Object.entries(chs).forEach(([chn,vs],chi)=>{
-            if(cf!==''&&chi.toString()!==cf) return;
-            vs.forEach((txt,vi)=>{
-              if(txt.toLowerCase().includes(term)){
-                const s=txt.toLowerCase().indexOf(term);
-                const sn='…'+txt.substr(Math.max(0,s-20),term.length+40)+'…';
-                matches.push({tn,bii,chi,vi,sn});
-              }
+      // Search modal logic
+      searchBtn.onclick = ()=> modal.classList.add('open');
+      searchClose.onclick = ()=> modal.classList.remove('open');
+      searchInput.addEventListener('keydown', e=>{
+        if(e.key !== 'Enter') return;
+        const term = e.target.value.trim().toLowerCase();
+        if(!term) return;
+        resultsList.innerHTML = '<li>Searching…</li>';
+        statsDiv.textContent = '';
+        const tf = filtTrans.value, tfm = filtTest.value, bf = filtBook.value, cf = filtChap.value;
+        const matches = [];
+        Object.entries(transData).forEach(([tn, bs])=>{
+          if(tf && tn !== tf) return;
+          lists[tn].books.forEach((bni, bii)=>{
+            if(bf !== '' && bii.toString() !== bf) return;
+            const isOT = bii < 39;
+            if(tfm==='ot'&&!isOT) return;
+            if(tfm==='nt'&& isOT) return;
+            const chs = bs[bni]||{};
+            Object.entries(chs).forEach(([chn, vs], chi)=>{
+              if(cf !== '' && chi.toString() !== cf) return;
+              vs.forEach((txt, vi)=>{
+                if(txt.toLowerCase().includes(term)){
+                  const start = txt.toLowerCase().indexOf(term);
+                  const snippet = '…'+txt.substr(Math.max(0, start-20), term.length+40)+'…';
+                  matches.push({tn, bii, chi, vi, snippet});
+                }
+              });
             });
           });
         });
-      });
-      statsDiv.textContent=`Found ${matches.length} occurrence${matches.length!==1?'s':''}`;
-      resultsList.innerHTML='';
-      matches.forEach(m=>{
-        const bn=lists[m.tn].books[m.bii];
-        const cn=lists[m.tn].chapters[bn][m.chi];
-        const li=document.createElement('li');
-        li.innerHTML=`<strong>[${m.tn}] ${bn} ${cn}:${m.vi+1}</strong><p><em>${m.sn}</em></p>`;
-        li.onclick=()=>{
-          primary.value=m.tn; primary.onchange();
-          bookSel.value=m.bii; bookSel.onchange();
-          chapSel.value=m.chi; chapSel.onchange();
-          verseSel.value=m.vi; verseSel.onchange();
-          searchModal.classList.add('hidden');
-        };
-        resultsList.append(li);
-      });
-    });
+        statsDiv.textContent = `Found ${matches.length} occurrence${matches.length!==1?'s':''}`;
+        resultsList.innerHTML = '';
+        matches.forEach(m=>{
+          const bn = lists[m.tn].books[m.bii];
+          const cn = lists[m.tn].chapters[bn][m.chi];
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>[${m.tn}] ${bn} ${cn}:${m.vi+1}</strong><p><em>${m.snippet}</em></p>`;
+          li.onclick = ()=>{
+            primary.value = m.tn; primary.onchange();
+            bookSel.value = m.bii; bookSel.onchange();
+            chapSel.value = m.chi; chapSel.onchange();
+            verseSel.value = m.vi; verseSel.onchange();
+            modal.classList.remove('open');
+          };
+          resultsList.append(li);
+        });
+      };
 
-    function updateURL(){
-      const p=new URLSearchParams();
-      p.set('primary',primary.value);
-      p.set('book',state.bkIdx);
-      p.set('chap',state.chIdx);
-      p.set('verse',state.idx);
-      history.replaceState(null,'','?'+p.toString());
-      document.title=`${lists[primary.value].books[state.bkIdx]} ${state.chIdx+1}:${state.idx+1}`;
+      // Deep link handling
+      const params = new URLSearchParams(location.search);
+      if(params.has('primary')) primary.value = params.get('primary'), primary.onchange();
+      if(params.has('book')) bookSel.value = params.get('book'), bookSel.onchange();
+      if(params.has('chap')) chapSel.value = params.get('chap'), chapSel.onchange();
+      if(params.has('verse')) verseSel.value = params.get('verse'), verseSel.onchange();
     }
-    function renderAll(){
-      output.innerHTML='';
-      const {idx,bkIdx,chIdx}=state;
-      const main=primary.value;
-      const bk=lists[main].books[bkIdx];
-      const ch=lists[main].chapters[bk][chIdx];
-      const vs=transData[main][bk][ch]||[];
-      const total=vs.length;
-      verseImg.src=`images/${bkIdx+1}/${chIdx+1}/${idx+1}.jpg`;
-      const checked=Array.from(compareC.querySelectorAll('input:checked')).map(i=>i.value).filter(n=>n!==main);
-      const names=[main,...checked];
-      names.forEach(name=>{
-        const b2=lists[name].books[bkIdx];
-        const c2s=lists[name].chapters[b2]||[];
-        const txt=transData[name][b2]?.[c2s[chIdx]]?.[idx]||'';
-        const card=document.createElement('div');
-        card.className='card';
-        card.innerHTML=`<h2>${name}</h2><p>${txt}</p><div class="prog">${idx+1} / ${total}</div>`;
-        const icons=document.createElement('div'); icons.className='icons';
-        const noteBtn=document.createElement('button');
-        noteBtn.innerText='📝'; noteBtn.title='Note';
-        noteBtn.onclick=()=>{
-          const vid=`${name}|${bkIdx}|${chIdx}|${idx}`;
-          const notes=JSON.parse(localStorage.getItem('notes')||'{}');
-          const n=prompt('Note:',notes[vid]||'');
-          notes[vid]=n; localStorage.setItem('notes',JSON.stringify(notes));
-        };
-        const copyBtn=document.createElement('button');
-        copyBtn.innerText='📋'; copyBtn.title='Copy';
-        copyBtn.onclick=()=>navigator.clipboard.writeText(txt).then(()=>alert('Copied!'));
-        const shareBtn=document.createElement('button');
-        shareBtn.innerText='🔗'; shareBtn.title='Share';
-        shareBtn.onclick=()=>{
-          const url=`${location.origin}${location.pathname}?primary=${name}&book=${bkIdx}&chap=${chIdx}&verse=${idx}`;
-          if(navigator.share) navigator.share({title:`${bk} ${chIdx+1}:${idx+1}`,url});
-          else navigator.clipboard.writeText(url).then(()=>alert('Link copied!'));
-        };
-        icons.append(noteBtn,copyBtn,shareBtn);
-        card.append(icons);
-        output.append(card);
-      });
-      prevBtn.disabled=state.idx===0;
-      nextBtn.disabled=state.idx>=total-1;
-    }
-    function navigate(d){
-      const m=+verseSlider.max;
-      state.idx=Math.max(0,Math.min(m,state.idx+d));
-      verseSel.value=state.idx; verseSlider.value=state.idx;
-      renderAll(); updateURL();
-    }
-    function handleDeepLink(){
-      const p=new URLSearchParams(location.search);
-      if(p.has('primary')&&lists[p.get('primary')]){
-        primary.value=p.get('primary'); primary.onchange();
-      }
-      if(p.has('book')){
-        bookSel.value=p.get('book'); bookSel.onchange();
-      }
-      if(p.has('chap')){
-        chapSel.value=p.get('chap'); chapSel.onchange();
-      }
-      if(p.has('verse')){
-        verseSel.value=p.get('verse'); verseSel.onchange();
-      }
-    }
-
-    // 6) auto-select first translation
-    primary.disabled=false;
-    if(primary.options.length){
-primary.selectedIndex = 0;
-primary.dispatchEvent(new Event('change'));
-    }
-    handleDeepLink();
   })();
   </script>
 </body>
 </html>
-
-
