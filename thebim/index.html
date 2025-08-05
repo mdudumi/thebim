@@ -41,81 +41,187 @@ header {
   top: 0;
   z-index: 10;
 }
-header h1 {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
+header h1 { font-size: 1.25rem; font-weight: 600; }
 header .icons { display:flex; gap:1rem; }
-header .icons button {
-  color: #ffffff;
-  transition: color var(--transition);
+header .icons button { color: #ffffff; transition: color var(--transition); }
+header .icons button:hover { color: var(--accent); }
+
+.controls {
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(128px,1fr));
+  gap:.75rem;
+  padding:1rem;
+  background:var(--surface);
+  box-shadow:var(--shadow-sm);
 }
-header .icons button:hover {
-  color: var(--accent);
+.controls select, .controls button {
+  width:100%; padding:.75rem 1rem; border-radius:var(--radius);
+  border:1px solid #e2e8f0; font-size:.95rem;
+  transition:border-color var(--transition),box-shadow var(--transition);
+  background:var(--surface);
 }
-.controls { display:grid; grid-template-columns: repeat(auto-fit,minmax(128px,1fr)); gap:.75rem; padding:1rem; background:var(--surface); box-shadow:var(--shadow-sm); }
-.controls select, .controls button { width:100%; padding:.75rem 1rem; border-radius:var(--radius); border:1px solid #e2e8f0; font-size:.95rem; transition:border-color var(--transition),box-shadow var(--transition); background:var(--surface); }
-.controls select:focus, .controls button:focus { outline:none; border-color:var(--primary-light); box-shadow:0 0 0 3px rgba(99,102,241,0.35); }
-.controls button { background:var(--primary); color:#fff; font-weight:500; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.5rem; }
+.controls select:focus, .controls button:focus {
+  outline:none; border-color:var(--primary-light);
+  box-shadow:0 0 0 3px rgba(99,102,241,0.35);
+}
+.controls button {
+  background:var(--primary); color:#fff; font-weight:500;
+  border:none; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; gap:.5rem;
+}
 .controls .range-wrapper { grid-column: span 6; padding:0 1rem; }
 #verse-slider { width:100%; accent-color:var(--accent); }
-#compare-container { grid-column: span 6; display:flex; flex-wrap:wrap; gap:.5rem; padding:.5rem; border:1px solid #e2e8f0; border-radius:var(--radius); background:#fafbfc; }
-main { flex:1; display:grid; grid-template-columns:1fr 2fr; gap:1rem; overflow:hidden; padding:1rem; }
+#compare-container {
+  grid-column: span 6; display:flex; flex-wrap:wrap;
+  gap:.5rem; padding:.5rem; border:1px solid #e2e8f0;
+  border-radius:var(--radius); background:#fafbfc;
+}
+
+main {
+  flex:1; display:grid; grid-template-columns:1fr 2fr;
+  gap:1rem; overflow:hidden; padding:1rem;
+}
 @media (max-width:900px) { main { flex-direction:column; display:flex; } }
-aside#image-panel { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow-md); display:flex; align-items:center; justify-content:center; height:100%; overflow:hidden; }
+aside#image-panel {
+  background:var(--surface); border-radius:var(--radius);
+  box-shadow:var(--shadow-md); display:flex;
+  align-items:center; justify-content:center;
+  height:100%; overflow:hidden;
+}
 #verse-image { width:100%; height:100%; object-fit:cover; border-radius:var(--radius); }
+
 .translations { overflow-y:auto; padding:1rem; }
-.card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow-sm); margin-bottom:1rem; padding:1rem; position:relative; transition:transform var(--transition); }
+.card {
+  background:var(--surface); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); margin-bottom:1rem;
+  padding:1rem; position:relative;
+  transition:transform var(--transition);
+}
 .card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
 .card h2 { font-size:1rem; font-weight:500; color:var(--primary); margin-bottom:.5rem; }
 .card p { font-size:.95rem; line-height:1.5; margin-bottom:.75rem; }
 .card .prog { font-size:.85rem; color:var(--neutral); text-align:right; }
-.card .actions { position:absolute; top:0.75rem; right:0.75rem; display:flex; gap:0.5rem; }
-.card .actions button { background:none; border:none; cursor:pointer; font-size:1.1rem; color:var(--neutral); transition:color var(--transition); }
+.card .actions {
+  position:absolute; top:0.75rem; right:0.75rem;
+  display:flex; gap:0.5rem;
+}
+.card .actions button {
+  background:none; border:none; cursor:pointer;
+  font-size:1.1rem; color:var(--neutral);
+  transition:color var(--transition);
+}
 .card .actions button:hover { color:var(--primary); }
 
 /* Modals */
-#search-modal, #compare-modal, #note-modal { display:none; position:fixed; inset:0; z-index:20; }
-#search-modal.active, #compare-modal.active, #note-modal.active { display:block; }
-.search-overlay, .overlay { position:absolute; inset:0; background:rgba(0,0,0,0.4); }
-.search-panel, .compare-panel, .note-panel { position:absolute; top:10%; left:50%; transform:translateX(-50%); width:90%; max-width:600px; background:var(--surface); border-radius:var(--radius); padding:1rem; box-shadow:var(--shadow-md); max-height:85vh; overflow-y:auto; }
-.search-panel header, .compare-panel header, .note-panel header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
-#search-close, #compare-close, #note-close { background:none; border:none; font-size:1.25rem; cursor:pointer; }
+#search-modal, #compare-modal, #note-modal {
+  display:none; position:fixed; inset:0; z-index:20;
+}
+#search-modal.active, #compare-modal.active, #note-modal.active {
+  display:block;
+}
+.search-overlay, .overlay {
+  position:absolute; inset:0; background:rgba(0,0,0,0.4);
+}
+.search-panel, .compare-panel, .note-panel {
+  position:absolute; top:10%; left:50%; transform:translateX(-50%);
+  width:90%; max-width:600px; background:var(--surface);
+  border-radius:var(--radius); padding:1rem;
+  box-shadow:var(--shadow-md); max-height:85vh; overflow-y:auto;
+}
+.search-panel header, .compare-panel header, .note-panel header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:1rem;
+}
+#search-close, #compare-close, #note-close {
+  background:none; border:none; font-size:1.25rem; cursor:pointer;
+}
 .search-input-group { display:flex; gap:.5rem; margin-bottom:1rem; }
-.search-input-group input { flex:1; padding:.5rem; border:1px solid #e2e8f0; border-radius:4px; }
-.search-input-group button { padding:.5rem 1rem; border:none; background:var(--primary); color:#fff; border-radius:4px; cursor:pointer; }
-.search-filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:.5rem; margin-bottom:1rem; }
-.search-filters select { padding:.5rem; border:1px solid #e2e8f0; border-radius:var(--radius); }
+.search-input-group input {
+  flex:1; padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;
+}
+.search-input-group button {
+  padding:.5rem 1rem; border:none; background:var(--primary);
+  color:#fff; border-radius:4px; cursor:pointer;
+}
+.search-filters {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:.5rem; margin-bottom:1rem;
+}
+.search-filters select {
+  padding:.5rem; border:1px solid #e2e8f0; border-radius:var(--radius);
+}
 #search-stats { font-size:.95rem; color:var(--neutral); margin-bottom:.5rem; }
 #search-results { list-style:none; padding:0; }
-#search-results li { padding:.5rem; border-bottom:1px solid #e2e8f0; cursor:pointer; transition:background var(--transition); }
+#search-results li {
+  padding:.5rem; border-bottom:1px solid #e2e8f0;
+  cursor:pointer; transition:background var(--transition);
+}
 #search-results li:hover { background:var(--bg-gradient); }
+
 .compare-panel { max-width:700px; }
-.compare-list { display:flex; flex-direction:column; gap:1rem; margin-bottom:1rem; }
-.compare-entry { display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:.5rem; align-items:center; }
-.compare-entry select, .compare-entry button { padding:.5rem; border:1px solid #e2e8f0; border-radius:var(--radius); }
-#add-compare-entry { background:var(--primary-light); color:#fff; border:none; padding:.5rem 1rem; border-radius:var(--radius); cursor:pointer; }
-#compare-result { display:flex; gap:1rem; flex-wrap:wrap; }
-.verse-block { flex:1; background:var(--surface); padding:.75rem; border-radius:var(--radius); box-shadow:var(--shadow-sm); }
-.verse-block h3 { font-size:.95rem; margin-bottom:.5rem; color:var(--primary); }
+.compare-list {
+  display:flex; flex-direction:column; gap:1rem; margin-bottom:1rem;
+}
+.compare-entry {
+  display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto;
+  gap:.5rem; align-items:center;
+}
+.compare-entry select, .compare-entry button {
+  padding:.5rem; border:1px solid #e2e8f0; border-radius:var(--radius);
+}
+#add-compare-entry {
+  background:var(--primary-light); color:#fff; border:none;
+  padding:.5rem 1rem; border-radius:var(--radius); cursor:pointer;
+}
+#compare-result {
+  display:flex; gap:1rem; flex-wrap:wrap;
+}
+.verse-block {
+  flex:1; background:var(--surface); padding:.75rem;
+  border-radius:var(--radius); box-shadow:var(--shadow-sm);
+}
+.verse-block h3 {
+  font-size:.95rem; margin-bottom:.5rem; color:var(--primary);
+}
 
 /* Note Modal */
 .note-panel { max-width:600px; }
-.note-panel header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
-.note-panel .toolbar { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem; }
-.note-panel .toolbar button { padding:0.4rem; border:none; background:var(--neutral); color:#fff; border-radius:4px; cursor:pointer; font-size:0.9rem; }
+.note-panel header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:1rem;
+}
+.note-panel .toolbar {
+  display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;
+}
+.note-panel .toolbar button {
+  padding:0.4rem; border:none; background:var(--neutral);
+  color:#fff; border-radius:4px; cursor:pointer; font-size:0.9rem;
+}
 .note-panel .toolbar button:hover { background:var(--primary); }
-.note-panel .toolbar .color-swatch { width:20px; height:20px; border:1px solid #ccc; cursor:pointer; border-radius:4px; }
-.note-panel .note-area { min-height:150px; border:1px solid #e2e8f0; border-radius:4px; padding:0.5rem; overflow-y:auto; }
+.note-panel .toolbar .color-swatch {
+  width:20px; height:20px; border:1px solid #ccc;
+  cursor:pointer; border-radius:4px;
+}
+.note-panel .note-area {
+  min-height:150px; border:1px solid #e2e8f0;
+  border-radius:4px; padding:0.5rem; overflow-y:auto;
+}
 
-/* Mobile-responsive tweaks */
+/* Mobile tweaks */
 @media (max-width: 600px) {
-  .controls { display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem; padding:.75rem; }
-  .controls select#primary, .controls #compare-container { grid-column:1/-1; }
+  .controls {
+    grid-template-columns:repeat(3,1fr);
+    gap:.5rem; padding:.75rem;
+  }
+  .controls select#primary, .controls #compare-container {
+    grid-column:1/-1;
+  }
   .controls select#book { grid-column:1/2; }
   .controls select#chap { grid-column:2/3; }
   .controls select#verse { grid-column:3/4; }
-  .controls button#prev, .controls button#next { grid-column:1/-1; width:100%; }
+  .controls button#prev, .controls button#next {
+    grid-column:1/-1; width:100%;
+  }
 }
   </style>
 </head>
@@ -190,14 +296,16 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
         <button id="note-close">✖</button>
       </header>
       <div class="toolbar">
+        <!-- Text formatting -->
         <button data-cmd="bold"><strong>B</strong></button>
         <button data-cmd="italic"><em>I</em></button>
         <button data-cmd="underline"><u>U</u></button>
-        <div class="color-swatch" data-color="#e53935" style="background:#e53935;"></div>
-        <div class="color-swatch" data-color="#8e24aa" style="background:#8e24aa;"></div>
-        <div class="color-swatch" data-color="#3949ab" style="background:#3949ab;"></div>
-        <div class="color-swatch" data-color="#43a047" style="background:#43a047;"></div>
-        <div class="color-swatch" data-color="#ffb300" style="background:#ffb300;"></div>
+        <!-- Color palette -->
+        <button class="color-swatch" data-cmd="foreColor" data-color="#e53935" style="background:#e53935;"></button>
+        <button class="color-swatch" data-cmd="foreColor" data-color="#8e24aa" style="background:#8e24aa;"></button>
+        <button class="color-swatch" data-cmd="foreColor" data-color="#3949ab" style="background:#3949ab;"></button>
+        <button class="color-swatch" data-cmd="foreColor" data-color="#43a047" style="background:#43a047;"></button>
+        <button class="color-swatch" data-cmd="foreColor" data-color="#ffb300" style="background:#ffb300;"></button>
       </div>
       <div id="note-area" class="note-area" contenteditable="true"></div>
       <button id="save-note" style="margin-top:0.5rem; padding:0.5rem 1rem; background:var(--primary); color:#fff; border:none; border-radius:4px; cursor:pointer;">
@@ -208,36 +316,36 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // Element refs
-      const primary       = document.getElementById('primary'),
-            compareC      = document.getElementById('compare-container'),
-            bookSel       = document.getElementById('book'),
-            chapSel       = document.getElementById('chap'),
-            verseSel      = document.getElementById('verse'),
-            prevBtn       = document.getElementById('prev'),
-            nextBtn       = document.getElementById('next'),
-            verseSlider   = document.getElementById('verse-slider'),
-            output        = document.getElementById('output'),
-            verseImg      = document.getElementById('verse-image'),
-            searchBtn     = document.getElementById('global-search-btn'),
-            searchModal   = document.getElementById('search-modal'),
-            searchClose   = document.getElementById('search-close'),
-            globalInput   = document.getElementById('search-input-global'),
-            startBtn      = document.getElementById('start-search'),
-            resultsList   = document.getElementById('search-results'),
-            statsDiv      = document.getElementById('search-stats'),
-            compareIcon   = document.getElementById('compare-icon-btn'),
-            compareModal  = document.getElementById('compare-modal'),
-            compareClose  = document.getElementById('compare-close'),
-            compareList   = document.getElementById('compare-list'),
-            addEntry      = document.getElementById('add-compare-entry'),
-            filterTrans   = document.getElementById('filter-translation'),
-            filterBook    = document.getElementById('filter-book'),
-            filterChap    = document.getElementById('filter-chapter'),
-            noteModal     = document.getElementById('note-modal'),
-            noteClose     = document.getElementById('note-close'),
-            saveNoteBtn   = document.getElementById('save-note'),
-            noteArea      = document.getElementById('note-area');
+      // Elements
+      const primary     = document.getElementById('primary'),
+            compareC    = document.getElementById('compare-container'),
+            bookSel     = document.getElementById('book'),
+            chapSel     = document.getElementById('chap'),
+            verseSel    = document.getElementById('verse'),
+            prevBtn     = document.getElementById('prev'),
+            nextBtn     = document.getElementById('next'),
+            verseSlider = document.getElementById('verse-slider'),
+            output      = document.getElementById('output'),
+            verseImg    = document.getElementById('verse-image'),
+            searchBtn   = document.getElementById('global-search-btn'),
+            searchModal = document.getElementById('search-modal'),
+            searchClose = document.getElementById('search-close'),
+            globalInput = document.getElementById('search-input-global'),
+            startBtn    = document.getElementById('start-search'),
+            resultsList = document.getElementById('search-results'),
+            statsDiv    = document.getElementById('search-stats'),
+            compareIcon = document.getElementById('compare-icon-btn'),
+            compareModal= document.getElementById('compare-modal'),
+            compareClose= document.getElementById('compare-close'),
+            compareList = document.getElementById('compare-list'),
+            addEntry    = document.getElementById('add-compare-entry'),
+            filterTrans = document.getElementById('filter-translation'),
+            filterBook  = document.getElementById('filter-book'),
+            filterChap  = document.getElementById('filter-chapter'),
+            noteModal   = document.getElementById('note-modal'),
+            noteClose   = document.getElementById('note-close'),
+            saveNoteBtn = document.getElementById('save-note'),
+            noteArea    = document.getElementById('note-area');
 
       const apiUrl = 'https://api.github.com/repos/mdudumi/thebim/contents/thebim/Translations';
       let transData = {}, lists = {}, state = { idx:0, bkIdx:0, chIdx:0 }, compareEntries = [];
@@ -261,7 +369,7 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
       // Fetch translations
       const files = await fetch(apiUrl).then(r=>r.json()).catch(()=>[]);
       for (let f of files) {
-        if (!f.name.endsWith('.json')|| f.name==='index.json') continue;
+        if (!f.name.endsWith('.json') || f.name==='index.json') continue;
         const name = f.name.replace(/\.json$/,'');
         try {
           const data = await fetch(f.download_url).then(r=>r.json());
@@ -272,7 +380,7 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
         } catch {}
       }
 
-      // Populate primary & compare
+      // Populate translation & compare
       const names = Object.keys(transData);
       fillSelect(primary, names.map(n=>({ label:n, value:n })));
       names.forEach(n=>{
@@ -281,21 +389,21 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
         compareC.append(lbl);
       });
 
-      // Populate search filters
+      // Search filters
       fillSelect(filterTrans, [{ label:'All Bibles', value:'' }].concat(names.map(n=>({label:n,value:n}))));
       filterTrans.onchange = ()=>{
-        const t = filterTrans.value;
+        const t=filterTrans.value;
         if (t) fillSelect(filterBook, [{label:'All Books',value:''}].concat(lists[t].books.map(b=>({label:b,value:b}))));
         else { filterBook.innerHTML='<option value="">All Books</option>'; filterBook.disabled=false; }
         filterChap.innerHTML='<option value="">All Chapters</option>'; filterChap.disabled=false;
       };
-      filterBook.onchange=()=>{
+      filterBook.onchange = ()=>{
         const t=filterTrans.value,b=filterBook.value;
-        if(t&&b) fillSelect(filterChap, [{label:'All Chapters',value:''}].concat(lists[t].chapters[b].map(c=>({label:c,value:c}))));
+        if (t&&b) fillSelect(filterChap, [{label:'All Chapters',value:''}].concat(lists[t].chapters[b].map(c=>({label:c,value:c}))));
         else filterChap.innerHTML='<option value="">All Chapters</option>';
       };
 
-      // Handlers for primary/book/chap/verse
+      // Primary/book/chap/verse handlers
       primary.onchange = ()=>{
         state={idx:0,bkIdx:0,chIdx:0};
         fillSelect(bookSel, lists[primary.value].books.map((b,i)=>({label:b,value:i})));
@@ -328,7 +436,7 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
         verseSel.value=state.idx; verseSlider.value=state.idx; renderAll();
       }
 
-      // Render verses with Copy/Share/Note
+      // Render verses with actions
       function renderAll() {
         output.innerHTML='';
         const {idx,bkIdx,chIdx} = state,
@@ -355,7 +463,7 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
               <button class="note-btn" title="Note">📝</button>
             </div>`;
           card.querySelector('.copy-btn').onclick=()=>navigator.clipboard.writeText(txt);
-          card.querySelector('.share-btn').onclick=()=>{ 
+          card.querySelector('.share-btn').onclick=()=>{
             const ref=`${name} ${bk} ${ch}:${idx+1}`,
                   urlText=encodeURIComponent(`${ref}\n\n"${txt}"`);
             window.open(`https://wa.me/?text=${urlText}`,'_blank');
@@ -385,7 +493,7 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
         matches.forEach(m=>{
           const li=document.createElement('li');
           li.innerHTML=`<strong>[${m.n}] ${m.b} ${m.j+1}:${m.k+1}</strong> ${m.t.substring(0,50)}…`;
-          li.onclick=()=>{ 
+          li.onclick=()=>{
             searchModal.classList.remove('active');
             primary.value=m.n; primary.onchange();
             bookSel.value=lists[m.n].books.indexOf(m.b); bookSel.onchange();
@@ -436,7 +544,7 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
           compareList.append(div);
         });
         addEntry.disabled = compareEntries.length>=5;
-        updateCompare
+        updateCompareResult();
       }
       function updateCompareResult(){
         const cmpRes=document.getElementById('compare-result');
@@ -461,24 +569,21 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
       noteClose.onclick = ()=>noteModal.classList.remove('active');
       saveNoteBtn.onclick = ()=>{
         console.log('Saved note for', currentRef, noteArea.innerHTML);
-        // TODO: persist
+        // TODO: persist note
         noteModal.classList.remove('active');
       };
-      // Toolbar formatting
+
+      // Toolbar formatting & colors
       document.querySelectorAll('.note-panel .toolbar button[data-cmd]').forEach(btn=>{
-        btn.addEventListener('click',()=>{
-          document.execCommand(btn.dataset.cmd,false);
-          noteArea.focus();
-        });
-      });
-      document.querySelectorAll('.note-panel .toolbar .color-swatch').forEach(swatch=>{
-        swatch.addEventListener('click',()=>{
-          document.execCommand('foreColor',false,swatch.dataset.color);
+        btn.addEventListener('click', ()=>{
+          const cmd = btn.dataset.cmd;
+          const value = btn.dataset.color || null;
+          document.execCommand(cmd, false, value);
           noteArea.focus();
         });
       });
 
-      // Auto-select first items
+      // Initialize first selection
       primary.disabled=false; primary.selectedIndex=0; primary.onchange();
       bookSel.value="0"; bookSel.onchange();
       chapSel.value="0"; chapSel.onchange();
