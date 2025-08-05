@@ -176,24 +176,74 @@
       width: calc(100% - 2rem); margin: 0 1rem 1rem; display: block;
     }
 
+    /* Mobile‐friendly overrides */
     @media (max-width: 800px) {
+      /* Stack controls vertically for easier thumb navigation */
       .controls {
-        grid-template-columns: 1fr 1fr 1fr 1fr;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        padding: .75rem 1rem;
       }
+      .controls > * {
+        width: 100%;
+      }
+
+      /* Make the compare list scrollable horizontally */
+      #compare-container {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: .5rem;
+        padding: .5rem 0;
+      }
+      #compare-container label {
+        flex: 0 0 auto;
+      }
+
+      /* Optimize the image panel height */
       aside#image-panel {
-        width: 100%; border-right: none; border-bottom: 1px solid var(--border);
+        flex: 0 0 auto;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: .75rem 1rem;
       }
-      #verse-image { max-height: none; }
-      .translations { width: 100%; }
+      #verse-image {
+        max-height: 200px;
+        margin: 0 auto;
+        display: block;
+      }
+
+      /* Tweak translation cards for mobile readability */
+      .translations { padding: 1rem; }
+      .card {
+        margin-bottom: .75rem;
+        padding: .75rem;
+      }
+      .card h2 { font-size: 1rem; }
+      .card p { font-size: .9rem; line-height: 1.4; }
+
+      /* Adjust header and slider spacing */
+      h1 { font-size: 1.25rem; padding: .75rem; }
+      #verse-slider { margin: .5rem 1rem; }
+
+      /* Improve touch‐target sizes */
+      .controls button,
+      .controls select {
+        padding: .75rem;
+        font-size: 1rem;
+      }
+
+      /* Simplify search modal filters */
+      .search-filters { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
-
   <h1>Bible Interactive Model</h1>
-
   <div class="controls">
-    <select id="primary" disabled></select>    
+    <select id="primary" disabled></select>
     <div id="compare-container"></div>
     <select id="book" disabled></select>
     <select id="chap" disabled></select>
@@ -202,7 +252,6 @@
     <button id="next" disabled>▶</button>
     <button id="global-search-btn" title="Search">🔎</button>
   </div>
-
   <div id="search-modal" class="hidden">
     <div class="search-overlay"></div>
     <div class="search-panel">
@@ -222,7 +271,6 @@
       <ul id="search-results"></ul>
     </div>
   </div>
-
   <div class="content-wrapper">
     <aside id="image-panel">
       <img id="verse-image" src="" alt="Verse">
@@ -231,7 +279,6 @@
       <p style="color:var(--muted);padding:1rem;">Loading translations…</p>
     </div>
   </div>
-
   <input type="range" id="verse-slider" disabled>
 
   <script>
@@ -507,4 +554,5 @@ primary.dispatchEvent(new Event('change'));
   </script>
 </body>
 </html>
+
 
