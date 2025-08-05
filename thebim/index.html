@@ -325,7 +325,7 @@
         'English.json','Francais.json','Italian.json',
         'Spanish.json','Turkish.json'
       ];
-      const baseURL = 'https://raw.githubusercontent.com/mdudumi/thebim/main/thebim/Translations/';
+      const baseURL = 'https://github.com/mdudumi/thebim/tree/main/thebim/Translations';
       for (let f of files){
         try {
           const res = await fetch(baseURL+f);
@@ -357,3 +357,4 @@
   </script>
 </body>
 </html>
+
