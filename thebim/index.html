@@ -86,6 +86,16 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
 #search-results { list-style:none; padding:0; }
 #search-results li { padding:.5rem; border-bottom:1px solid #e2e8f0; cursor:pointer; transition:background var(--transition); }
 #search-results li:hover { background:var(--bg); }
+.compare-panel { max-width:700px; }
+.compare-panel header h2 { margin:0; }
+.compare-list { display:flex; flex-direction:column; gap:1rem; margin-bottom:1rem; }
+.compare-entry { display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:.5rem; align-items:center; }
+.compare-entry select, .compare-entry button { padding:.5rem; border:1px solid #e2e8f0; border-radius:var(--radius); }
+#add-compare-entry { background:var(--primary-light); color:#fff; border:none; padding:.5rem 1rem; border-radius:var(--radius); cursor:pointer; }
+#compare-result { display:flex; gap:1rem; flex-wrap:wrap; }
+.verse-block { flex:1; background:var(--bg); padding:.75rem; border-radius:var(--radius); box-shadow:var(--shadow-sm); }
+.verse-block h3 { font-size:.95rem; margin-bottom:.5rem; color:var(--primary); }
+
 /* Mobile-responsive tweaks */
 @media (max-width: 600px) {
   .controls {
@@ -94,13 +104,16 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
     gap: 0.5rem;
     padding: 0.75rem;
   }
+  /* Primary dropdown and compare checkboxes full width */
   .controls select#primary,
   .controls #compare-container {
     grid-column: 1 / -1;
   }
+  /* Book, Chapter, Verse each one column */
   .controls select#book   { grid-column: 1 / 2; }
   .controls select#chap   { grid-column: 2 / 3; }
   .controls select#verse  { grid-column: 3 / 4; }
+  /* Prev/Next on full-width rows */
   .controls button#prev,
   .controls button#next {
     grid-column: 1 / -1;
@@ -170,7 +183,6 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
       <div id="compare-result"></div>
     </div>
   </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       function fillSelect(sel, items) {
@@ -179,35 +191,31 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
         sel.disabled = !items.length;
       }
 
-      const primary          = document.getElementById('primary'),
-            compareC         = document.getElementById('compare-container'),
-            bookSel          = document.getElementById('book'),
-            chapSel          = document.getElementById('chap'),
-            verseSel         = document.getElementById('verse'),
-            prevBtn          = document.getElementById('prev'),
-            nextBtn          = document.getElementById('next'),
-            verseSlider      = document.getElementById('verse-slider'),
-            output           = document.getElementById('output'),
-            verseImg         = document.getElementById('verse-image'),
-            searchBtn        = document.getElementById('global-search-btn'),
-            searchModal      = document.getElementById('search-modal'),
-            searchClose      = document.getElementById('search-close'),
-            globalInput      = document.getElementById('search-input-global'),
-            startBtn         = document.getElementById('start-search'),
-            resultsList      = document.getElementById('search-results'),
-            statsDiv         = document.getElementById('search-stats'),
-            filterTranslation= document.getElementById('filter-translation'),
-            filterTestament  = document.getElementById('filter-testament'),
-            filterBook       = document.getElementById('filter-book'),
-            filterChapter    = document.getElementById('filter-chapter'),
-            compareIcon      = document.getElementById('compare-icon-btn'),
-            compareModal     = document.getElementById('compare-modal'),
-            compareClose     = document.getElementById('compare-close'),
-            compareList      = document.getElementById('compare-list'),
-            addEntry         = document.getElementById('add-compare-entry'),
-            compareResult    = document.getElementById('compare-result');
-
+      const primary       = document.getElementById('primary'),
+            compareC      = document.getElementById('compare-container'),
+            bookSel       = document.getElementById('book'),
+            chapSel       = document.getElementById('chap'),
+            verseSel      = document.getElementById('verse'),
+            prevBtn       = document.getElementById('prev'),
+            nextBtn       = document.getElementById('next'),
+            verseSlider   = document.getElementById('verse-slider'),
+            output        = document.getElementById('output'),
+            verseImg      = document.getElementById('verse-image'),
+            searchBtn     = document.getElementById('global-search-btn'),
+            searchModal   = document.getElementById('search-modal'),
+            searchClose   = document.getElementById('search-close'),
+            globalInput   = document.getElementById('search-input-global'),
+            startBtn      = document.getElementById('start-search'),
+            resultsList   = document.getElementById('search-results'),
+            statsDiv      = document.getElementById('search-stats'),
+            compareIcon   = document.getElementById('compare-icon-btn'),
+            compareModal  = document.getElementById('compare-modal'),
+            compareClose  = document.getElementById('compare-close'),
+            compareList   = document.getElementById('compare-list'),
+            addEntry      = document.getElementById('add-compare-entry'),
+            compareResult = document.getElementById('compare-result');
       const apiUrl = 'https://api.github.com/repos/mdudumi/thebim/contents/thebim/Translations';
+
       let transData = {}, lists = {}, state = { idx:0, bkIdx:0, chIdx:0 }, compareEntries = [];
 
       function nest(json) {
@@ -223,18 +231,18 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
       // Fetch translations
       const files = await fetch(apiUrl).then(r=>r.json()).catch(()=>[]);
       for (let f of files) {
-        if (!f.name.endsWith('.json') || f.name==='index.json') continue;
+        if (!f.name.endsWith('.json')||f.name==='index.json') continue;
         const name = f.name.replace(/\.json$/,'');
         try {
           const data = await fetch(f.download_url).then(r=>r.json());
           transData[name] = nest(data);
           const books = Object.keys(transData[name]), chs = {};
-          books.forEach(b => chs[b] = Object.keys(transData[name][b]));
-          lists[name] = { books, chapters: chs };
+          books.forEach(b=>chs[b]=Object.keys(transData[name][b]));
+          lists[name] = { books, chapters:chs };
         } catch {}
       }
 
-      // Main translation dropdown & compare checkboxes
+      // Populate translation dropdown & compare checkboxes
       const names = Object.keys(transData);
       fillSelect(primary, names.map(n=>({ label:n, value:n })));
       names.forEach(n => {
@@ -243,66 +251,37 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
         compareC.append(lbl);
       });
 
-      // Search filters
-      fillSelect(filterTranslation, [
-        { label:'All Bibles', value:'' },
-        ...names.map(n=>({ label:n, value:n }))
-      ]);
-      filterTranslation.onchange = () => {
-        const sel = filterTranslation.value;
-        if (!sel) {
-          fillSelect(filterBook, [{ label:'All Books', value:'' }]);
-          fillSelect(filterChapter, [{ label:'All Chapters', value:'' }]);
-        } else {
-          fillSelect(filterBook, [
-            { label:'All Books', value:'' },
-            ...lists[sel].books.map(b=>({ label:b, value:b }))
-          ]);
-          fillSelect(filterChapter, [{ label:'All Chapters', value:'' }]);
-        }
-      };
-      filterBook.onchange = () => {
-        const bible = filterTranslation.value, book = filterBook.value;
-        if (!bible || !book) {
-          fillSelect(filterChapter, [{ label:'All Chapters', value:'' }]);
-        } else {
-          fillSelect(filterChapter, [
-            { label:'All Chapters', value:'' },
-            ...lists[bible].chapters[book].map(c=>({ label:c, value:c }))
-          ]);
-        }
-      };
-
-      // Main controls
+      // Handlers
       primary.onchange = () => {
         state = { idx:0, bkIdx:0, chIdx:0 };
-        fillSelect(bookSel, lists[primary.value].books.map((b,i)=>({ label:b, value:i })));
+        fillSelect(bookSel, lists[primary.value].books.map((b,i) => ({ label:b, value:i })));
         fillSelect(chapSel, []);
         fillSelect(verseSel, []);
       };
       bookSel.onchange = () => {
         state.bkIdx = +bookSel.value;
         const bk = lists[primary.value].books[state.bkIdx];
-        fillSelect(chapSel, lists[primary.value].chapters[bk].map((c,i)=>({ label:c, value:i })));
+        fillSelect(chapSel, lists[primary.value].chapters[bk].map((c,i) => ({ label:c, value:i })));
         fillSelect(verseSel, []);
       };
       chapSel.onchange = () => {
-        state.chIdx = +chapSel.value; state.idx = 0;
+        state.chIdx = +chapSel.value;
+        state.idx = 0;
         const bk = lists[primary.value].books[state.bkIdx];
         const ch = lists[primary.value].chapters[bk][state.chIdx];
-        const vs = transData[primary.value][bk][ch]||[];
+        const vs = transData[primary.value][bk][ch] || [];
         fillSelect(verseSel, vs.map((_,i)=>({ label:i+1, value:i })));
         verseSlider.max = vs.length - 1;
         verseSlider.value = 0;
       };
-      verseSel.onchange = () => { state.idx = +verseSel.value; renderAll(); };
-      prevBtn.onclick = ()=>navigate(-1);
-      nextBtn.onclick = ()=>navigate(1);
-      verseSlider.oninput = ()=>{
-        state.idx = +verseSlider.value;
-        verseSel.value = state.idx;
+      verseSel.onchange = () => {
+        state.idx = +verseSel.value;
         renderAll();
       };
+      prevBtn.onclick = ()=>navigate(-1);
+      nextBtn.onclick = ()=>navigate(1);
+      verseSlider.oninput = ()=>{ state.idx=+verseSlider.value; verseSel.value=state.idx; renderAll(); };
+      compareC.addEventListener('change', ()=>{ if(!verseSel.disabled) renderAll(); });
 
       function navigate(delta) {
         const max = +verseSlider.max;
@@ -319,12 +298,14 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
         const bk = lists[main].books[bkIdx];
         const ch = lists[main].chapters[bk][chIdx];
         verseImg.src = `images/${bkIdx+1}/${chIdx+1}/${idx+1}.jpg`;
-        const extras = Array.from(compareC.querySelectorAll('input:checked')).map(i=>i.value).filter(n=>n!==main);
-        const toShow = [ main, ...extras ];
-        toShow.forEach(name=>{
+        const checked = Array.from(compareC.querySelectorAll('input:checked'))
+                             .map(i => i.value)
+                             .filter(n => n !== main);
+        const toShow = [ main, ...checked ];
+        toShow.forEach(name => {
           const b2 = lists[name].books[bkIdx];
           const c2 = lists[name].chapters[b2][chIdx];
-          const txt = (transData[name][b2]||{})[c2]?.[idx]||'';
+          const txt = (transData[name][b2]||{})[c2]?.[idx] || '';
           const card = document.createElement('div');
           card.className = 'card';
           card.innerHTML = `
@@ -337,42 +318,32 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
       }
 
       // Search modal
-      searchBtn.onclick = ()=>{
-        searchModal.classList.add('active');
-        globalInput.value=''; startBtn.disabled=true;
-        resultsList.innerHTML=''; statsDiv.textContent='';
-      };
+      searchBtn.onclick = ()=>{ searchModal.classList.add('active'); globalInput.value=''; startBtn.disabled=true; resultsList.innerHTML=''; statsDiv.textContent=''; };
       searchClose.onclick = ()=>searchModal.classList.remove('active');
       globalInput.oninput = ()=>startBtn.disabled=!globalInput.value.trim();
-      startBtn.onclick = ()=>{
+      startBtn.onclick = ()=> {
         const term = globalInput.value.trim().toLowerCase();
-        const fBible = filterTranslation.value;
-        const fBook  = filterBook.value;
-        const fChapt = filterChapter.value;
-        const matches = [];
-        names.forEach(n=>{
-          if (fBible && n!==fBible) return;
-          lists[n].books.forEach((b,i)=>{
-            if (fBook && b!==fBook) return;
-            lists[n].chapters[b].forEach((c,j)=>{
-              if (fChapt && c!==fChapt) return;
-              (transData[n][b][c]||[]).forEach((t,k)=>{
+        let matches = [];
+        names.forEach(n => {
+          lists[n].books.forEach((b,i) => {
+            lists[n].chapters[b].forEach((c,j) => {
+              (transData[n][b][c]||[]).forEach((t,k) => {
                 if (t.toLowerCase().includes(term)) matches.push({n,b,j,k,t});
               });
             });
           });
         });
         statsDiv.textContent = `Found ${matches.length}`;
-        resultsList.innerHTML='';
-        matches.forEach(m=>{
+        resultsList.innerHTML = '';
+        matches.forEach(m => {
           const li = document.createElement('li');
           li.innerHTML = `<strong>[${m.n}] ${m.b} ${m.j+1}:${m.k+1}</strong> ${m.t.substring(0,50)}…`;
-          li.onclick = ()=>{
+          li.onclick = () => {
             searchModal.classList.remove('active');
-            primary.value=m.n; primary.onchange();
-            bookSel.value=lists[m.n].books.indexOf(m.b); bookSel.onchange();
-            chapSel.value=m.j; chapSel.onchange();
-            verseSel.value=m.k; verseSel.onchange();
+            primary.value = m.n; primary.onchange();
+            bookSel.value = lists[m.n].books.indexOf(m.b); bookSel.onchange();
+            chapSel.value = m.j; chapSel.onchange();
+            verseSel.value = m.k; verseSel.onchange();
           };
           resultsList.append(li);
         });
@@ -381,82 +352,82 @@ aside#image-panel { background:var(--surface); border-radius:var(--radius); box-
       // Compare modal
       compareIcon.onclick = ()=>compareModal.classList.add('active');
       compareClose.onclick = ()=>compareModal.classList.remove('active');
-      addEntry.onclick = ()=>{
-        if (compareEntries.length<5) {
-          compareEntries.push({ trans:primary.value, bookIdx:0, chapIdx:0, verseIdx:0 });
+      addEntry.onclick = ()=> {
+        if (compareEntries.length < 5) {
+          compareEntries.push({ trans: primary.value, bookIdx:0, chapIdx:0, verseIdx:0 });
           renderCompare();
         }
       };
       function renderCompare() {
-        compareList.innerHTML='';
-        compareEntries.forEach((e,i)=>{
+        compareList.innerHTML = '';
+        compareEntries.forEach((e,i) => {
           const div = document.createElement('div');
-          div.className='compare-entry';
-          const selT=document.createElement('select'),
-                selB=document.createElement('select'),
-                selC=document.createElement('select'),
-                selV=document.createElement('select'),
-                rm=document.createElement('button');
-          rm.textContent='–';
-          rm.onclick=()=>{ compareEntries.splice(i,1); renderCompare(); };
+          div.className = 'compare-entry';
+          const selT = document.createElement('select'),
+                selB = document.createElement('select'),
+                selC = document.createElement('select'),
+                selV = document.createElement('select'),
+                rm   = document.createElement('button');
+          rm.textContent = '–';
+          rm.onclick = () => { compareEntries.splice(i,1); renderCompare(); };
           fillSelect(selT, names.map(n=>({ label:n, value:n })));
-          selT.value=e.trans;
-          selT.onchange=()=>{
-            e.trans=selT.value;
-            updateBooks();
-          };
-          function updateBooks(){
-            const bs=lists[e.trans].books;
+          selT.value = e.trans;
+          selT.onchange = ()=>{ e.trans = selT.value; updateBooks(); };
+          function updateBooks() {
+            const bs = lists[e.trans].books;
             fillSelect(selB, bs.map((b,idx)=>({ label:b, value:idx })));
-            selB.value=e.bookIdx;
+            selB.value = e.bookIdx;
             selB.onchange();
           }
-          selB.onchange=()=>{
-            e.bookIdx=+selB.value;
-            const b=lists[e.trans].books[e.bookIdx];
+          selB.onchange = ()=> {
+            e.bookIdx = +selB.value;
+            const b = lists[e.trans].books[e.bookIdx];
             fillSelect(selC, lists[e.trans].chapters[b].map((c,idx)=>({ label:c, value:idx })));
-            selC.value=e.chapIdx;
+            selC.value = e.chapIdx;
             selC.onchange();
           };
-          selC.onchange=()=>{
-            e.chapIdx=+selC.value;
-            const b=lists[e.trans].books[e.bookIdx];
-            const c=lists[e.trans].chapters[b][e.chapIdx];
+          selC.onchange = ()=> {
+            e.chapIdx = +selC.value;
+            const b = lists[e.trans].books[e.bookIdx];
+            const c = lists[e.trans].chapters[b][e.chapIdx];
             fillSelect(selV, (transData[e.trans][b][c]||[]).map((_,idx)=>({ label:idx+1, value:idx })));
-            selV.value=e.verseIdx;
+            selV.value = e.verseIdx;
             selV.onchange();
           };
-          selV.onchange=()=>{
-            e.verseIdx=+selV.value;
+          selV.onchange = ()=> {
+            e.verseIdx = +selV.value;
             updateCompareResult();
           };
           updateBooks();
           div.append(selT, selB, selC, selV, rm);
           compareList.append(div);
         });
-        document.getElementById('add-compare-entry').disabled = compareEntries.length>=5;
+        addEntry.disabled = compareEntries.length >= 5;
         updateCompareResult();
       }
-      function updateCompareResult(){
-        compareResult.innerHTML='';
-        compareEntries.forEach(e=>{
-          const b=lists[e.trans].books[e.bookIdx];
-          const c=lists[e.trans].chapters[b][e.chapIdx];
-          const t=transData[e.trans][b][c][e.verseIdx]||'';
-          const vb=document.createElement('div');
-          vb.className='verse-block';
-          vb.innerHTML=`<h3>${e.trans} ${b} ${e.chapIdx+1}:${e.verseIdx+1}</h3><p>${t}</p>`;
+      function updateCompareResult() {
+        compareResult.innerHTML = '';
+        compareEntries.forEach(e => {
+          const b = lists[e.trans].books[e.bookIdx];
+          const c = lists[e.trans].chapters[b][e.chapIdx];
+          const t = transData[e.trans][b][c][e.verseIdx] || '';
+          const vb = document.createElement('div');
+          vb.className = 'verse-block';
+          vb.innerHTML = `<h3>${e.trans} ${b} ${e.chapIdx+1}:${e.verseIdx+1}</h3><p>${t}</p>`;
           compareResult.append(vb);
         });
       }
 
-      // Initialize first selection
-      primary.disabled=false;
-      primary.selectedIndex=0;
+      // Auto-select first translation → book 1 → chapter 1 → verse 1
+      primary.disabled = false;
+      primary.selectedIndex = 0;
       primary.onchange();
-      bookSel.value="0"; bookSel.onchange();
-      chapSel.value="0"; chapSel.onchange();
-      verseSel.value="0"; verseSel.onchange();
+      bookSel.value = "0";
+      bookSel.onchange();
+      chapSel.value = "0";
+      chapSel.onchange();
+      verseSel.value = "0";
+      verseSel.onchange();
     });
   </script>
 </body>
